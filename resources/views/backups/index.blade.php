@@ -3,7 +3,7 @@
 @section('title', __('messages.backups'))
 
 @section('content')
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm rounded-4 border border-body-secondary bg-body p-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm rounded-4 border border-body-secondary  p-3">
         <h3 class="mb-0">{{ __('messages.backups') }}</h3>
         <div class="d-flex gap-2 flex-wrap">
             @can('create', \App\Models\Backup::class)

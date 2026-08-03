@@ -250,6 +250,7 @@ return [
     'backup_not_ready' => 'This backup is still being generated.',
     'backup_import' => 'Import Backup',
     'backup_file' => 'Backup File',
+    'import_backup' => 'Import Backup',
     'import_backup_hint' => 'Upload a .sqlite or .zip backup file to add it to the backup history.',
     'backup_imported' => 'Backup imported successfully.',
     'backup_status_queued' => 'Generating…',

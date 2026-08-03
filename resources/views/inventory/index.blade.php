@@ -3,7 +3,7 @@
 @section('title', __('messages.inventory'))
 
 @section('content')
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm p-2">
         <h3 class="mb-0">{{ __('messages.inventory') }}</h3>
         <div class="d-flex gap-2 flex-grow-1 justify-content-end">
             <x-search-bar :placeholder="__('messages.search_inventory')" />
