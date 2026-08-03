@@ -108,7 +108,7 @@
             </div>
         </div>
 
-        <main class="flex-grow-1 p-3 p-md-4">
+        <main class="flex-grow-1 p-3 p-md-4 d-flex flex-column">
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}
@@ -122,7 +122,13 @@
                 </div>
             @endif
 
-            @yield('content')
+            <div class="flex-grow-1">
+                @yield('content')
+            </div>
+
+            <footer class="text-center text-muted small fw-semibold mt-4 pt-3 border-top">
+                Created by Hussin Helal © 2026
+            </footer>
         </main>
     </div>
 
