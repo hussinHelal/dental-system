@@ -8,7 +8,7 @@
         $nextDate = \Illuminate\Support\Carbon::parse($date)->addDay()->toDateString();
     @endphp
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm p-2">
         <h3 class="mb-0">{{ __('messages.appointments') }}</h3>
         <div class="d-flex gap-2">
             <a href="{{ route('appointments.search') }}" class="btn btn-outline-secondary">
@@ -130,7 +130,7 @@
     </div>
 
     @can('create', \App\Models\Appointment::class)
-        <x-modal id="createAppointmentModal" :title="__('messages.book_appointment')" size="lg">
+        <x-modal id="createAppointmentModal" :title="__('messages.book_appointment')" size="lg" data-availability-url="{{ route('appointments.availability') }}">
             <form data-ajax-form method="POST" action="{{ route('appointments.store') }}">
                 @csrf
                 <div class="row">

@@ -6,7 +6,7 @@
         $nextDate = \Illuminate\Support\Carbon::parse($date)->addDay()->toDateString();
     ?>
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm p-2">
         <h3 class="mb-0"><?php echo e(__('messages.appointments')); ?></h3>
         <div class="d-flex gap-2">
             <a href="<?php echo e(route('appointments.search')); ?>" class="btn btn-outline-secondary">
@@ -197,14 +197,14 @@
     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create', \App\Models\Appointment::class)): ?>
         <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['id' => 'createAppointmentModal','title' => __('messages.book_appointment'),'size' => 'lg']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['id' => 'createAppointmentModal','title' => __('messages.book_appointment'),'size' => 'lg','dataAvailabilityUrl' => ''.e(route('appointments.availability')).'']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('modal'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['id' => 'createAppointmentModal','title' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.book_appointment')),'size' => 'lg']); ?>
+<?php $component->withAttributes(['id' => 'createAppointmentModal','title' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.book_appointment')),'size' => 'lg','data-availability-url' => ''.e(route('appointments.availability')).'']); ?>
             <form data-ajax-form method="POST" action="<?php echo e(route('appointments.store')); ?>">
                 <?php echo csrf_field(); ?>
                 <div class="row">

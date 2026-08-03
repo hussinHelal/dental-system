@@ -77,6 +77,31 @@ class AppointmentController extends Controller
         return view('appointments.search', compact('appointments', 'doctors', 'rooms'));
     }
 
+    public function availability(Request $request)
+    {
+        $request->validate([
+            'appointment_date' => ['required', 'date'],
+            'doctor_id' => ['nullable', 'exists:doctors,id'],
+            'room_id' => ['nullable', 'exists:rooms,id'],
+        ]);
+
+        $query = Appointment::query()
+            ->whereDate('appointment_date', $request->query('appointment_date'))
+            ->whereNotIn('status', [Appointment::STATUS_CANCELLED, Appointment::STATUS_NO_SHOW]);
+
+        if ($request->filled('doctor_id')) {
+            $query->where('doctor_id', $request->query('doctor_id'));
+        }
+
+        if ($request->filled('room_id')) {
+            $query->where('room_id', $request->query('room_id'));
+        }
+
+        $appointments = $query->orderBy('start_time')->get(['start_time', 'end_time']);
+
+        return response()->json(['appointments' => $appointments]);
+    }
+
     public function show(Appointment $appointment)
     {
         $this->authorize('view', $appointment);

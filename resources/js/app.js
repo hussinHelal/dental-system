@@ -94,6 +94,27 @@ document.addEventListener('focusout', (e) => {
     }
 });
 
+document.addEventListener('change', (e) => {
+    const modal = e.target.closest('#createAppointmentModal');
+    if (!modal) return;
+
+    const relevant = ['appointment_date', 'doctor_id', 'room_id'];
+    if (!relevant.includes(e.target.name)) {
+        return;
+    }
+
+    autoFillAppointmentStartTime(modal);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createModalElement = document.getElementById('createAppointmentModal');
+    if (!createModalElement) return;
+
+    createModalElement.addEventListener('shown.bs.modal', () => {
+        autoFillAppointmentStartTime(createModalElement);
+    });
+});
+
 function normalizeTimeValue(value) {
     const text = value.toLowerCase().replace(/\s+/g, '');
 
@@ -176,6 +197,102 @@ function normalizeTimeValue(value) {
 
 function pad(number) {
     return number.toString().padStart(2, '0');
+}
+
+function parseTime24(time) {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+}
+
+function formatTime12(minutes) {
+    let hour = Math.floor(minutes / 60);
+    const minute = minutes % 60;
+    const meridiem = hour >= 12 ? 'PM' : 'AM';
+
+    if (hour === 0) {
+        hour = 12;
+    } else if (hour > 12) {
+        hour -= 12;
+    }
+
+    return `${hour}:${pad(minute)} ${meridiem}`;
+}
+
+function slotsOverlap(startA, endA, startB, endB) {
+    return startA < endB && endA > startB;
+}
+
+function findNextAvailableStart(busyRanges) {
+    const earliest = 13 * 60; // 1:00 PM
+    const latest = 23 * 60; // 11:00 PM start for a 1h slot
+    const duration = 60;
+
+    const normalizedBusy = busyRanges
+        .map(([start, end]) => [parseTime24(start), parseTime24(end)])
+        .sort((a, b) => a[0] - b[0]);
+
+    for (let start = earliest; start <= latest; start += 30) {
+        const end = start + duration;
+        const conflict = normalizedBusy.some(([busyStart, busyEnd]) => slotsOverlap(start, end, busyStart, busyEnd));
+        if (!conflict) {
+            return start;
+        }
+    }
+
+    return null;
+}
+
+async function autoFillAppointmentStartTime(modal) {
+    const availabilityUrl = modal.dataset.availabilityUrl;
+    if (!availabilityUrl) {
+        return;
+    }
+
+    const dateInput = modal.querySelector('input[name="appointment_date"]');
+    const doctorInput = modal.querySelector('select[name="doctor_id"]');
+    const roomInput = modal.querySelector('select[name="room_id"]');
+    const startInput = modal.querySelector('input[name="start_time"]');
+    const endInput = modal.querySelector('input[name="end_time"]');
+
+    if (!dateInput || !startInput || !endInput) {
+        return;
+    }
+
+    const date = dateInput.value;
+    if (!date) {
+        return;
+    }
+
+    const params = new URLSearchParams({ appointment_date: date });
+    if (doctorInput?.value) {
+        params.append('doctor_id', doctorInput.value);
+    }
+    if (roomInput?.value) {
+        params.append('room_id', roomInput.value);
+    }
+
+    try {
+        const response = await fetch(`${availabilityUrl}?${params.toString()}`, {
+            headers: { Accept: 'application/json' },
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        const busyRanges = (data.appointments || []).map((appointment) => [appointment.start_time, appointment.end_time]);
+        const nextStart = findNextAvailableStart(busyRanges);
+
+        if (nextStart !== null) {
+            startInput.value = formatTime12(nextStart);
+            if (!endInput.value.trim()) {
+                endInput.value = formatTime12(nextStart + 60);
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load appointment availability', err);
+    }
 }
 
 /**

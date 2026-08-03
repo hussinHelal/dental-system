@@ -28,7 +28,7 @@ foreach ($attributes->all() as $__key => $__value) {
 
 unset($__defined_vars, $__key, $__value); ?>
 
-<div class="modal fade" id="<?php echo e($id); ?>" tabindex="-1" aria-labelledby="<?php echo e($id); ?>Label" aria-hidden="true">
+<div <?php echo e($attributes->merge(['class' => 'modal fade', 'id' => $id, 'tabindex' => '-1', 'aria-labelledby' => $id.'Label', 'aria-hidden' => 'true'])); ?>>
     <div class="modal-dialog <?php echo e($size ? 'modal-'.$size : ''); ?> modal-dialog-centered">
         <div class="modal-content zedan-card">
             <div class="modal-header">

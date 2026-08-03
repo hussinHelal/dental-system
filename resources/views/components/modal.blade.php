@@ -1,6 +1,6 @@
 @props(['id', 'title', 'size' => null])
 
-<div class="modal fade" id="{{ $id }}" tabindex="-1" aria-labelledby="{{ $id }}Label" aria-hidden="true">
+<div {{ $attributes->merge(['class' => 'modal fade', 'id' => $id, 'tabindex' => '-1', 'aria-labelledby' => $id.'Label', 'aria-hidden' => 'true']) }}>
     <div class="modal-dialog {{ $size ? 'modal-'.$size : '' }} modal-dialog-centered">
         <div class="modal-content zedan-card">
             <div class="modal-header">

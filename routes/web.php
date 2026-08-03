@@ -80,6 +80,7 @@ Route::middleware('auth')->group(function () {
     // Appointments - daily schedule + full cross-field search.
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
     Route::get('/appointments/search', [AppointmentController::class, 'search'])->name('appointments.search');
+    Route::get('/appointments/availability', [AppointmentController::class, 'availability'])->name('appointments.availability');
     Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
     Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
     Route::put('/appointments/{appointment}', [AppointmentController::class, 'update'])->name('appointments.update');
