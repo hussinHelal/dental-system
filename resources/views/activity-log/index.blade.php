@@ -119,5 +119,5 @@
         </div>
     </div>
 
-    <div class="mt-3">{{ $activities->links() }}</div>
+    <div class="mt-3 ">{{ $activities->links() }}</div>
 @endsection

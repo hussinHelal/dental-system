@@ -27,6 +27,7 @@
                                 <th>{{ __('messages.name') }}</th>
                                 <th>{{ __('messages.specialty') }}</th>
                                 <th>{{ __('messages.phone') }}</th>
+                                <th>{{ __('messages.working_hours') }}</th>
                                 <th>{{ __('messages.status') }}</th>
                                 <th></th>
                             </tr>
@@ -35,11 +36,12 @@
                             @foreach($doctors as $doctor)
                                 <tr>
                                     <td data-label="{{ __('messages.name') }}">
-                                        <img src="{{ $doctor->photoUrl() }}" width="32" height="32" class="rounded-circle me-2" alt="">
+                                        <img src="{{ $doctor->photoUrl() }}" width="32" height="32" class="rounded-circle me-2" alt="{{ $doctor->name }}" data-image-preview style="cursor: pointer;">
                                         {{ $doctor->name }}
                                     </td>
                                     <td data-label="{{ __('messages.specialty') }}">{{ $doctor->specialty }}</td>
                                     <td data-label="{{ __('messages.phone') }}">{{ $doctor->phone }}</td>
+                                    <td data-label="{{ __('messages.working_hours') }}">{{ $doctor->working_hours_summary }}</td>
                                     <td data-label="{{ __('messages.status') }}">
                                         <span class="badge text-bg-{{ $doctor->is_active ? 'success' : 'secondary' }}">
                                             {{ $doctor->is_active ? __('messages.active') : __('messages.inactive') }}
@@ -53,7 +55,7 @@
                                         @endcan
                                         @can('delete', $doctor)
                                             @if($doctor->is_active)
-                                                <form data-ajax-form method="POST" action="{{ route('doctors.destroy', $doctor) }}" class="d-inline" onsubmit="return confirm('{{ __('messages.confirm_deactivate') }}')">
+                                                <form data-ajax-form method="POST" action="{{ route('doctors.destroy', $doctor) }}" class="d-inline" data-confirm="{{ __('messages.confirm_deactivate') }}">
                                                     @csrf @method('DELETE')
                                                     <button class="btn btn-sm btn-outline-danger" title="{{ __('messages.deactivate') }}"><i class="bi bi-slash-circle"></i></button>
                                                 </form>
@@ -74,6 +76,20 @@
                                             <x-form-input name="name" :label="__('messages.name')" :value="$doctor->name" required />
                                             <x-form-input name="specialty" :label="__('messages.specialty')" :value="$doctor->specialty" />
                                             <x-form-input name="phone" :label="__('messages.phone')" :value="$doctor->phone" />
+                                            <div class="mb-3">
+                                                <label class="form-label">{{ __('messages.working_hours') }}</label>
+                                                <div class="row g-2">
+                                                    @foreach(['sat','sun','mon','tue','wed','thu','fri'] as $day)
+                                                        <div class="col-6">
+                                                            <label class="form-label small">{{ __('messages.day_'.$day) }}</label>
+                                                            <input type="text" name="working_hours[{{ $day }}]" class="form-control"
+                                                                value="{{ old('working_hours.'.$day, $doctor->working_hours_for_form[$day] ?? '') }}"
+                                                                placeholder="{{ __('messages.working_hours_placeholder') }}" dir="ltr">
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                <div class="form-text">{{ __('messages.working_hours_hint') }}</div>
+                                            </div>
                                             <div class="mb-3">
                                                 <label class="form-label">{{ __('messages.photo') }}</label>
                                                 <input type="file" name="photo" class="form-control" accept="image/*">
@@ -97,6 +113,20 @@
                 <x-form-input name="name" :label="__('messages.name')" required />
                 <x-form-input name="specialty" :label="__('messages.specialty')" />
                 <x-form-input name="phone" :label="__('messages.phone')" />
+                <div class="mb-3">
+                    <label class="form-label">{{ __('messages.working_hours') }}</label>
+                    <div class="row g-2">
+                        @foreach(['sat','sun','mon','tue','wed','thu','fri'] as $day)
+                            <div class="col-6">
+                                <label class="form-label small">{{ __('messages.day_'.$day) }}</label>
+                                <input type="text" name="working_hours[{{ $day }}]" class="form-control"
+                                    value="{{ old('working_hours.'.$day) }}"
+                                    placeholder="{{ __('messages.working_hours_placeholder') }}" dir="ltr">
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="form-text">{{ __('messages.working_hours_hint') }}</div>
+                </div>
                 <div class="mb-3">
                     <label class="form-label">{{ __('messages.photo') }}</label>
                     <input type="file" name="photo" class="form-control" accept="image/*">

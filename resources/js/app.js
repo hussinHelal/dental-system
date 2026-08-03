@@ -62,6 +62,122 @@ document.addEventListener('click', async (e) => {
     }
 });
 
+document.addEventListener('click', (e) => {
+    const image = e.target.closest('img[data-image-preview]');
+    if (!image) return;
+
+    e.preventDefault();
+    const modalEl = document.getElementById('imagePreviewModal');
+    const modalImg = modalEl.querySelector('#imagePreviewModalImg');
+    const title = modalEl.querySelector('#imagePreviewModalLabel');
+
+    modalImg.src = image.src;
+    modalImg.alt = image.alt || '';
+    title.textContent = image.dataset.imageTitle || image.alt || '';
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+});
+
+document.addEventListener('focusout', (e) => {
+    const input = e.target.closest('input[data-time-autofill]');
+    if (!input) return;
+
+    const value = input.value.trim();
+    if (value === '') {
+        return;
+    }
+
+    const normalized = normalizeTimeValue(value);
+    if (normalized) {
+        input.value = normalized;
+    }
+});
+
+function normalizeTimeValue(value) {
+    const text = value.toLowerCase().replace(/\s+/g, '');
+
+    if (/^\d{1,2}$/.test(text)) {
+        const hour = parseInt(text, 10);
+        if (hour === 0) {
+            return '00:00';
+        }
+        if (hour >= 1 && hour <= 12) {
+            return pad(hour) + ':00 PM';
+        }
+        if (hour >= 13 && hour <= 23) {
+            return pad(hour) + ':00';
+        }
+        return null;
+    }
+
+    if (/^(\d{1,2}):(\d{2})$/.test(text)) {
+        const parts = text.match(/^(\d{1,2}):(\d{2})$/);
+        const hour = parseInt(parts[1], 10);
+        const minute = parseInt(parts[2], 10);
+        if (minute < 0 || minute > 59) {
+            return null;
+        }
+        if (hour === 0) {
+            return '12:' + pad(minute) + ' AM';
+        }
+        if (hour >= 1 && hour <= 11) {
+            return pad(hour) + ':' + pad(minute) + ' PM';
+        }
+        if (hour === 12) {
+            return pad(hour) + ':' + pad(minute) + ' PM';
+        }
+        if (hour >= 13 && hour <= 23) {
+            return pad(hour - 12) + ':' + pad(minute) + ' PM';
+        }
+        return null;
+    }
+
+    if (/^(am|pm)(\d{1,2})$/.test(text)) {
+        const parts = text.match(/^(am|pm)(\d{1,2})$/);
+        const meridiem = parts[1];
+        const hour = parseInt(parts[2], 10);
+        if (hour >= 1 && hour <= 12) {
+            return pad(hour) + ':00 ' + meridiem.toUpperCase();
+        }
+    }
+
+    if (/^(am|pm)(\d{1,2}):(\d{2})$/.test(text)) {
+        const parts = text.match(/^(am|pm)(\d{1,2}):(\d{2})$/);
+        const meridiem = parts[1];
+        const hour = parseInt(parts[2], 10);
+        const minute = parts[3];
+        if (hour >= 1 && hour <= 12 && minute >= '00' && minute <= '59') {
+            return pad(hour) + ':' + minute + ' ' + meridiem.toUpperCase();
+        }
+    }
+
+    if (/^(\d{1,2})(am|pm)$/.test(text)) {
+        const parts = text.match(/^(\d{1,2})(am|pm)$/);
+        const hour = parseInt(parts[1], 10);
+        const meridiem = parts[2];
+        if (hour >= 1 && hour <= 12) {
+            return pad(hour) + ':00 ' + meridiem.toUpperCase();
+        }
+    }
+
+    if (/^(\d{1,2}):(\d{2})(am|pm)$/.test(text)) {
+        const parts = text.match(/^(\d{1,2}):(\d{2})(am|pm)$/);
+        const hour = parseInt(parts[1], 10);
+        const minute = parts[2];
+        const meridiem = parts[3];
+        if (hour >= 1 && hour <= 12 && minute >= '00' && minute <= '59') {
+            return pad(hour) + ':' + minute + ' ' + meridiem.toUpperCase();
+        }
+    }
+
+    return null;
+}
+
+function pad(number) {
+    return number.toString().padStart(2, '0');
+}
+
 /**
  * Generic AJAX submit handler for every create/edit modal form. Forms
  * opt in with data-ajax-form. On 422 it renders errors inline next to
@@ -97,6 +213,10 @@ document.addEventListener('submit', async (e) => {
     if (!form.matches('[data-ajax-form]')) return;
 
     e.preventDefault();
+    if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) {
+        return;
+    }
+
     clearFormErrors(form);
 
     const submitBtn = form.querySelector('[type="submit"]');

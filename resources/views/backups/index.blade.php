@@ -3,13 +3,18 @@
 @section('title', __('messages.backups'))
 
 @section('content')
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm rounded-4 border border-body-secondary bg-body p-3">
         <h3 class="mb-0">{{ __('messages.backups') }}</h3>
-        @can('create', \App\Models\Backup::class)
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#backupNowModal">
-                <i class="bi bi-cloud-arrow-up"></i> {{ __('messages.backup_now') }}
-            </button>
-        @endcan
+        <div class="d-flex gap-2 flex-wrap">
+            @can('create', \App\Models\Backup::class)
+                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importBackupModal">
+                    <i class="bi bi-file-earmark-arrow-up"></i> {{ __('messages.import_backup') }}
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#backupNowModal">
+                    <i class="bi bi-cloud-arrow-up"></i> {{ __('messages.backup_now') }}
+                </button>
+            @endcan
+        </div>
     </div>
 
     <div class="card zedan-card shadow-sm">
@@ -58,7 +63,7 @@
                                             @endif
                                         @endif
                                         @can('delete', $backup)
-                                            <form data-ajax-form method="POST" action="{{ route('backups.destroy', $backup) }}" class="d-inline" onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">
+                                            <form data-ajax-form method="POST" action="{{ route('backups.destroy', $backup) }}" class="d-inline" data-confirm="{{ __('messages.confirm_delete') }}">
                                                 @csrf @method('DELETE')
                                                 <button class="btn btn-sm btn-outline-danger" title="{{ __('messages.delete') }}"><i class="bi bi-trash"></i></button>
                                             </form>
@@ -98,6 +103,18 @@
                     :options="['pdf' => 'PDF', 'excel' => 'Excel', 'both' => __('messages.both_zipped'), 'database' => __('messages.database_backup')]" />
                 <p class="small text-secondary">{{ __('messages.database_backup_hint') }}</p>
                 <button type="submit" class="btn btn-primary w-100">{{ __('messages.generate_backup') }}</button>
+            </form>
+        </x-modal>
+
+        <x-modal id="importBackupModal" :title="__('messages.import_backup')">
+            <form data-ajax-form method="POST" action="{{ route('backups.import') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="mb-3">
+                    <label class="form-label">{{ __('messages.backup_file') }}</label>
+                    <input type="file" name="backup_file" class="form-control" accept=".sqlite,.zip" required>
+                    <div class="form-text">{{ __('messages.import_backup_hint') }}</div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">{{ __('messages.import_backup') }}</button>
             </form>
         </x-modal>
     @endcan

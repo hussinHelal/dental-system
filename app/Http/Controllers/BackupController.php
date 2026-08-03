@@ -75,4 +75,31 @@ class BackupController extends Controller
 
         return $this->respondSuccess($request, __('messages.backup_deleted'), 'backups.index');
     }
+
+    public function import(Request $request)
+    {
+        $this->authorize('create', Backup::class);
+
+        $request->validate([
+            'backup_file' => ['required', 'file', 'mimes:sqlite,zip'],
+        ]);
+
+        $file = $request->file('backup_file');
+        $extension = strtolower($file->getClientOriginalExtension());
+        $monthDir = now()->format('Y-m');
+        $filename = 'imported-backup-'.now()->format('Y-m-d_His').'.'.$extension;
+        $path = $file->storeAs($monthDir, $filename, 'backups');
+
+        Backup::create([
+            'filename' => $filename,
+            'path' => $path,
+            'type' => $extension === 'sqlite' ? 'database' : 'zip',
+            'status' => 'completed',
+            'size_bytes' => Storage::disk('backups')->size($path),
+            'generated_by' => $request->user()->id,
+            'generated_at' => now(),
+        ]);
+
+        return $this->respondSuccess($request, __('messages.backup_imported'), 'backups.index');
+    }
 }

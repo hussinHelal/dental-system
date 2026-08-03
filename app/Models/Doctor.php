@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -55,6 +56,48 @@ class Doctor extends Model
         return $this->photo
             ? asset('storage/'.$this->photo)
             : asset('images/default-doctor.png');
+    }
+
+    public function getWorkingHoursSummaryAttribute(): string
+    {
+        if (empty($this->working_hours) || ! is_array($this->working_hours)) {
+            return __('messages.closed');
+        }
+
+        return collect($this->working_hours)
+            ->filter()
+            ->map(fn ($hours, $day) => __('messages.day_'.$day).': '.$this->formatWorkingHoursRange($hours))
+            ->implode(', ') ?: __('messages.closed');
+    }
+
+    public function getWorkingHoursForFormAttribute(): array
+    {
+        if (empty($this->working_hours) || ! is_array($this->working_hours)) {
+            return [];
+        }
+
+        return collect($this->working_hours)
+            ->mapWithKeys(fn ($hours, $day) => [$day => $this->formatWorkingHoursRange($hours)])
+            ->all();
+    }
+
+    private function formatWorkingHoursRange(string $hours): string
+    {
+        $parts = explode('-', $hours);
+        if (count($parts) !== 2) {
+            return $hours;
+        }
+
+        return sprintf('%s - %s', $this->formatWorkingHoursTime(trim($parts[0])), $this->formatWorkingHoursTime(trim($parts[1])));
+    }
+
+    private function formatWorkingHoursTime(string $time): string
+    {
+        try {
+            return Carbon::createFromFormat('H:i', $time)->format('g:i A');
+        } catch (\Throwable $e) {
+            return $time;
+        }
     }
 
     public function scopeActive($query)

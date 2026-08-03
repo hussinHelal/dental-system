@@ -68,7 +68,7 @@
                         <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center flex-wrap gap-2"
                                 data-bs-toggle="modal" data-bs-target="#viewAppointmentModal{{ $appointment->id }}">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="fw-bold" style="min-width: 100px;">{{ $appointment->start_time }} - {{ $appointment->end_time }}</div>
+                                <div class="fw-bold" style="min-width: 100px;">{{ $appointment->time_range_formatted }}</div>
                                 <div>
                                     <div class="fw-semibold">{{ $appointment->patient->full_name }}</div>
                                     <div class="small text-secondary">
@@ -117,7 +117,7 @@
                                 </form>
                             @endcan
                             @can('delete', $appointment)
-                                <form data-ajax-form method="POST" action="{{ route('appointments.destroy', $appointment) }}" class="mt-2" onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">
+                                <form data-ajax-form method="POST" action="{{ route('appointments.destroy', $appointment) }}" class="mt-2" data-confirm="{{ __('messages.confirm_delete') }}">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-outline-danger w-100"><i class="bi bi-trash"></i> {{ __('messages.delete') }}</button>
                                 </form>
@@ -136,7 +136,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <x-form-select name="patient_id" :label="__('messages.patient')" required :placeholder="__('messages.select_patient')"
-                            :options="\App\Models\Patient::orderBy('full_name')->pluck('full_name', 'id')" />
+                            :options="\App\Models\Patient::orderBy('full_name')->pluck('full_name', 'id')"
+                            :value="$bookFor" />
                     </div>
                     <div class="col-md-6">
                         <x-form-select name="visit_type" :label="__('messages.visit_type')" required
@@ -161,12 +162,13 @@
                         <x-form-input type="date" name="appointment_date" :label="__('messages.date')" :value="$date" required />
                     </div>
                     <div class="col-md-4">
-                        <x-form-input type="time" name="start_time" :label="__('messages.start_time')" required />
+                        <x-form-input type="text" name="start_time" :label="__('messages.start_time')" required data-time-autofill="true" placeholder="{{ __('messages.appointment_time_placeholder') }}" dir="ltr" />
                     </div>
                     <div class="col-md-4">
-                        <x-form-input type="time" name="end_time" :label="__('messages.end_time')" required />
+                        <x-form-input type="text" name="end_time" :label="__('messages.end_time')" required data-time-autofill="true" placeholder="{{ __('messages.appointment_time_placeholder') }}" dir="ltr" />
                     </div>
                     <div class="col-12">
+                        <div class="form-text mb-2">{{ __('messages.appointment_time_hint') }}</div>
                         <x-form-textarea name="notes" :label="__('messages.notes')" />
                     </div>
                 </div>
@@ -174,4 +176,19 @@
             </form>
         </x-modal>
     @endcan
+
+       @push('scripts')
+    @if($bookFor)
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalElement = document.getElementById('createAppointmentModal');
+            if (modalElement) {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            }
+        });
+    </script>
+    @endif
+@endpush
+
 @endsection

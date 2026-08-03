@@ -29,6 +29,7 @@ class DoctorController extends Controller
         $this->authorize('create', Doctor::class);
 
         $data = $request->validated();
+        $data['working_hours'] = array_filter($data['working_hours'] ?? [], fn ($value) => filled($value)) ?: null;
 
         if ($request->hasFile('photo')) {
             $data['photo'] = $this->storeResizedImage($request->file('photo'), 'doctors');
@@ -44,6 +45,7 @@ class DoctorController extends Controller
         $this->authorize('update', $doctor);
 
         $data = $request->validated();
+        $data['working_hours'] = array_filter($data['working_hours'] ?? [], fn ($value) => filled($value)) ?: null;
 
         if ($request->hasFile('photo')) {
             if ($doctor->photo) {

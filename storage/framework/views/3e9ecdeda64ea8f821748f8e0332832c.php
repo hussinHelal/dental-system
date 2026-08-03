@@ -1,7 +1,7 @@
 <?php $__env->startSection('title', $patient->full_name); ?>
 
 <?php $__env->startSection('content'); ?>
-    <a href="<?php echo e(route('patients.index')); ?>" class="btn btn-sm btn-primary mb-2 ps-0 shadow-sm">
+    <a href="<?php echo e(route('patients.index')); ?>" class="btn btn-sm btn-primary mb-2 ps-0  shadow-sm">
         <i class="bi bi-arrow-<?php echo e(app()->getLocale() === 'ar' ? 'end' : 'start'); ?> icon-mirror-rtl"></i> <?php echo e(__('messages.back')); ?>
 
     </a>
@@ -10,7 +10,7 @@
         <div class="card-body shadow-sm">
             <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                 <div class="d-flex gap-3 align-items-center">
-                    <img src="<?php echo e($patient->photoUrl()); ?>" width="64" height="64" class="rounded-circle" alt="">
+                    <img src="<?php echo e($patient->photoUrl()); ?>" width="64" height="64" class="rounded-circle" alt="<?php echo e($patient->full_name); ?>" data-image-preview style="cursor: pointer;">
                     <div>
                         <h4 class="mb-1"><?php echo e($patient->full_name); ?></h4>
                         <div class="text-secondary">
@@ -22,7 +22,7 @@
                     </div>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="<?php echo e(route('appointments.index', ['date' => now()->toDateString()])); ?>?book_for=<?php echo e($patient->id); ?>" class="btn btn-sm btn-primary">
+                    <a href="<?php echo e(route('appointments.index', ['date' => now()->toDateString() , 'book_for' => $patient->id ])); ?>" class="btn btn-sm btn-primary">
                         <i class="bi bi-calendar-plus"></i> <?php echo e(__('messages.book_follow_up')); ?>
 
                     </a>
@@ -33,7 +33,7 @@
                         </button>
                     <?php endif; ?>
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delete', $patient)): ?>
-                        <form data-ajax-form method="POST" action="<?php echo e(route('patients.destroy', $patient)); ?>" onsubmit="return confirm('<?php echo e(__('messages.confirm_delete')); ?>')">
+                        <form data-ajax-form method="POST" action="<?php echo e(route('patients.destroy', $patient)); ?>" data-confirm="<?php echo e(__('messages.confirm_delete')); ?>">
                             <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                             <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>
@@ -103,7 +103,7 @@
                                     <?php $__currentLoopData = $patient->appointments; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $appointment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <tr>
                                             <td data-label="<?php echo e(__('messages.date')); ?>">
-                                                <?php echo e($appointment->appointment_date->toDateString()); ?> <?php echo e($appointment->start_time); ?>
+                                                <?php echo e($appointment->appointment_date->toDateString()); ?> <?php echo e($appointment->time_range_formatted); ?>
 
                                                 <?php if($appointment->session_number): ?>
                                                     <span class="badge text-bg-info"><?php echo e(__('messages.session')); ?> <?php echo e($appointment->session_number); ?></span>
@@ -212,7 +212,7 @@
                                 <?php endif; ?>
 
                                 <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delete', $payment)): ?>
-                                    <form data-ajax-form method="POST" action="<?php echo e(route('payments.destroy', $payment)); ?>" class="mt-2" onsubmit="return confirm('<?php echo e(__('messages.confirm_delete')); ?>')">
+                                    <form data-ajax-form method="POST" action="<?php echo e(route('payments.destroy', $payment)); ?>" class="mt-2" data-confirm="<?php echo e(__('messages.confirm_delete')); ?>">
                                         <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                                         <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> <?php echo e(__('messages.delete')); ?></button>
                                     </form>

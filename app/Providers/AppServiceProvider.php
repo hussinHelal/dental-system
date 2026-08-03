@@ -24,6 +24,7 @@ use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Activitylog\Models\Activity;
 
@@ -36,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Paginator::useBootstrap();
+
         // Kept portable to MySQL (utf8mb4 + older versions cap indexed
         // string columns at 191 chars); harmless no-op on SQLite.
         Schema::defaultStringLength(191);

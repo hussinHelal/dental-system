@@ -129,7 +129,7 @@
                         <tbody>
                             <?php $__currentLoopData = $todaysAppointments; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $appointment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <tr>
-                                    <td data-label="<?php echo e(__('messages.time')); ?>"><?php echo e($appointment->start_time); ?> - <?php echo e($appointment->end_time); ?></td>
+                                    <td data-label="<?php echo e(__('messages.time')); ?>"><?php echo e($appointment->time_range_formatted); ?></td>
                                     <td data-label="<?php echo e(__('messages.patient')); ?>"><?php echo e($appointment->patient->full_name); ?></td>
                                     <td data-label="<?php echo e(__('messages.doctor')); ?>"><?php echo e($appointment->doctor->name); ?></td>
                                     <td data-label="<?php echo e(__('messages.room')); ?>"><?php echo e($appointment->room->name); ?></td>

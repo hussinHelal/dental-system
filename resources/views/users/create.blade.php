@@ -26,6 +26,20 @@
                 @csrf
                 <x-form-input name="name" :label="__('messages.name')" required />
                 <x-form-input name="username" :label="__('messages.username')" required />
+                <div class="mb-3">
+                    <label class="form-label">{{ __('messages.working_hours') }}</label>
+                    <div class="row g-2">
+                        @foreach(['sat','sun','mon','tue','wed','thu','fri'] as $day)
+                            <div class="col-6">
+                                <label class="form-label small">{{ __('messages.day_'.$day) }}</label>
+                                <input type="text" name="working_hours[{{ $day }}]" class="form-control"
+                                    value="{{ old('working_hours.'.$day) }}"
+                                    placeholder="{{ __('messages.working_hours_placeholder') }}" dir="ltr">
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="form-text">{{ __('messages.working_hours_hint') }}</div>
+                </div>
                 <x-form-input type="password" name="password" :label="__('messages.password')" required />
                 <x-form-input type="password" name="password_confirmation" :label="__('messages.confirm_password')" required />
                 <div class="mb-3">

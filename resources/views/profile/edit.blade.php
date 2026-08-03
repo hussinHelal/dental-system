@@ -18,7 +18,7 @@
             @endif
 
             <div class="text-center mb-3">
-                <img src="{{ $user->avatarUrl() }}" width="80" height="80" class="rounded-circle" alt="">
+                <img src="{{ $user->avatarUrl() }}" width="80" height="80" class="rounded-circle" alt="{{ $user->name }}" data-image-preview style="cursor: pointer;">
             </div>
 
             <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">

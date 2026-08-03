@@ -48,7 +48,7 @@
                                             <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editItemModal{{ $item->id }}">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
-                                            <form data-ajax-form method="POST" action="{{ route('inventory.destroy', $item) }}" class="d-inline" onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">
+                                            <form data-ajax-form method="POST" action="{{ route('inventory.destroy', $item) }}" class="d-inline" data-confirm="{{ __('messages.confirm_delete') }}">
                                                 @csrf @method('DELETE')
                                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                                             </form>

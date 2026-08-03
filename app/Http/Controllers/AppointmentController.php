@@ -7,6 +7,7 @@ use App\Http\Requests\AppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Room;
+use App\Models\Patient;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,8 @@ class AppointmentController extends Controller
             ? Carbon::parse($request->query('date'))->toDateString()
             : Carbon::today()->toDateString();
 
+        $bookFor = $request->query('book_for');
+
         $appointments = Appointment::forDate($date)
             ->when($request->query('doctor_id'), fn ($q, $v) => $q->where('doctor_id', $v))
             ->when($request->query('room_id'), fn ($q, $v) => $q->where('room_id', $v))
@@ -37,8 +40,9 @@ class AppointmentController extends Controller
 
         $doctors = Doctor::active()->orderBy('name')->get();
         $rooms = Room::active()->orderBy('name')->get();
+        $patients = Patient::orderBy('full_name')->pluck('full_name', 'id');
 
-        return view('appointments.index', compact('appointments', 'date', 'doctors', 'rooms'));
+        return view('appointments.index', compact('appointments', 'date', 'doctors', 'rooms', 'bookFor','patients'));
     }
 
     /**
@@ -49,13 +53,19 @@ class AppointmentController extends Controller
     {
         $this->authorize('viewAny', Appointment::class);
 
-        $appointments = Appointment::search($request->query('q'))
-            ->when($request->query('doctor_id'), fn ($q, $v) => $q->where('doctor_id', $v))
-            ->when($request->query('room_id'), fn ($q, $v) => $q->where('room_id', $v))
-            ->when($request->query('visit_type'), fn ($q, $v) => $q->where('visit_type', $v))
-            ->when($request->query('status'), fn ($q, $v) => $q->where('status', $v))
-            ->when($request->query('date_from'), fn ($q, $v) => $q->whereDate('appointment_date', '>=', $v))
-            ->when($request->query('date_to'), fn ($q, $v) => $q->whereDate('appointment_date', '<=', $v))
+        $appointments = Appointment::query()
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $term = trim($request->query('q'));
+
+                $q->whereHas('patient', fn ($p) => $p->where('full_name', 'like', "%{$term}%")
+                        ->orWhere('phone', 'like', "%{$term}%"));
+            })
+            ->when($request->filled('doctor_id'), fn ($q, $v) => $q->where('doctor_id', $v))
+            ->when($request->filled('room_id'), fn ($q, $v) => $q->where('room_id', $v))
+            ->when($request->filled('visit_type'), fn ($q, $v) => $q->where('visit_type', $v))
+            ->when($request->filled('status'), fn ($q, $v) => $q->where('status', $v))
+            ->when($request->filled('date_from'), fn ($q, $v) => $q->whereDate('appointment_date', '>=', $v))
+            ->when($request->filled('date_to'), fn ($q, $v) => $q->whereDate('appointment_date', '<=', $v))
             ->with(['patient', 'doctor', 'room'])
             ->orderByDesc('appointment_date')
             ->paginate(20)

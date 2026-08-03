@@ -1,6 +1,7 @@
 <?php $__env->startSection('title', __('messages.patients')); ?>
 
 <?php $__env->startSection('content'); ?>
+
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm">
         <h3 class="mb-0"><?php echo e(__('messages.patients')); ?></h3>
         <div class="d-flex gap-2 flex-grow-1 justify-content-end">
@@ -72,7 +73,7 @@
                             <?php $__currentLoopData = $patients; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $patient): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <tr>
                                     <td data-label="<?php echo e(__('messages.name')); ?>">
-                                        <img src="<?php echo e($patient->photoUrl()); ?>" width="32" height="32" class="rounded-circle me-2" alt="">
+                                        <img src="<?php echo e($patient->photoUrl()); ?>" width="32" height="32" class="rounded-circle me-2" alt="<?php echo e($patient->full_name); ?>" data-image-preview style="cursor: pointer;">
                                         <?php echo e($patient->full_name); ?>
 
                                     </td>
@@ -266,6 +267,9 @@
 <?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
 <?php endif; ?>
     <?php endif; ?>
+
+ 
+
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\hussin\Downloads\zedan-dental-clinic\zedan\resources\views/patients/index.blade.php ENDPATH**/ ?>

@@ -87,7 +87,7 @@
                         <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center flex-wrap gap-2"
                                 data-bs-toggle="modal" data-bs-target="#viewAppointmentModal<?php echo e($appointment->id); ?>">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="fw-bold" style="min-width: 100px;"><?php echo e($appointment->start_time); ?> - <?php echo e($appointment->end_time); ?></div>
+                                <div class="fw-bold" style="min-width: 100px;"><?php echo e($appointment->time_range_formatted); ?></div>
                                 <div>
                                     <div class="fw-semibold"><?php echo e($appointment->patient->full_name); ?></div>
                                     <div class="small text-secondary">
@@ -173,7 +173,7 @@
                                 </form>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delete', $appointment)): ?>
-                                <form data-ajax-form method="POST" action="<?php echo e(route('appointments.destroy', $appointment)); ?>" class="mt-2" onsubmit="return confirm('<?php echo e(__('messages.confirm_delete')); ?>')">
+                                <form data-ajax-form method="POST" action="<?php echo e(route('appointments.destroy', $appointment)); ?>" class="mt-2" data-confirm="<?php echo e(__('messages.confirm_delete')); ?>">
                                     <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                                     <button class="btn btn-outline-danger w-100"><i class="bi bi-trash"></i> <?php echo e(__('messages.delete')); ?></button>
                                 </form>
@@ -211,14 +211,14 @@
                     <div class="col-md-6">
                         <?php if (isset($component)) { $__componentOriginal67ad07a4b593e690d435fee92e6413bb = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal67ad07a4b593e690d435fee92e6413bb = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.form-select','data' => ['name' => 'patient_id','label' => __('messages.patient'),'required' => true,'placeholder' => __('messages.select_patient'),'options' => \App\Models\Patient::orderBy('full_name')->pluck('full_name', 'id')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.form-select','data' => ['name' => 'patient_id','label' => __('messages.patient'),'required' => true,'placeholder' => __('messages.select_patient'),'options' => \App\Models\Patient::orderBy('full_name')->pluck('full_name', 'id'),'value' => $bookFor]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('form-select'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['name' => 'patient_id','label' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.patient')),'required' => true,'placeholder' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.select_patient')),'options' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(\App\Models\Patient::orderBy('full_name')->pluck('full_name', 'id'))]); ?>
+<?php $component->withAttributes(['name' => 'patient_id','label' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.patient')),'required' => true,'placeholder' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.select_patient')),'options' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(\App\Models\Patient::orderBy('full_name')->pluck('full_name', 'id')),'value' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($bookFor)]); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal67ad07a4b593e690d435fee92e6413bb)): ?>
@@ -365,14 +365,14 @@
                     <div class="col-md-4">
                         <?php if (isset($component)) { $__componentOriginal93a7e4fbb8709cb7edbcf616ab99cd14 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal93a7e4fbb8709cb7edbcf616ab99cd14 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.form-input','data' => ['type' => 'time','name' => 'start_time','label' => __('messages.start_time'),'required' => true]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.form-input','data' => ['type' => 'text','name' => 'start_time','label' => __('messages.start_time'),'required' => true,'dataTimeAutofill' => 'true','placeholder' => ''.e(__('messages.appointment_time_placeholder')).'','dir' => 'ltr']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('form-input'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['type' => 'time','name' => 'start_time','label' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.start_time')),'required' => true]); ?>
+<?php $component->withAttributes(['type' => 'text','name' => 'start_time','label' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.start_time')),'required' => true,'data-time-autofill' => 'true','placeholder' => ''.e(__('messages.appointment_time_placeholder')).'','dir' => 'ltr']); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal93a7e4fbb8709cb7edbcf616ab99cd14)): ?>
@@ -387,14 +387,14 @@
                     <div class="col-md-4">
                         <?php if (isset($component)) { $__componentOriginal93a7e4fbb8709cb7edbcf616ab99cd14 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal93a7e4fbb8709cb7edbcf616ab99cd14 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.form-input','data' => ['type' => 'time','name' => 'end_time','label' => __('messages.end_time'),'required' => true]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.form-input','data' => ['type' => 'text','name' => 'end_time','label' => __('messages.end_time'),'required' => true,'dataTimeAutofill' => 'true','placeholder' => ''.e(__('messages.appointment_time_placeholder')).'','dir' => 'ltr']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('form-input'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['type' => 'time','name' => 'end_time','label' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.end_time')),'required' => true]); ?>
+<?php $component->withAttributes(['type' => 'text','name' => 'end_time','label' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.end_time')),'required' => true,'data-time-autofill' => 'true','placeholder' => ''.e(__('messages.appointment_time_placeholder')).'','dir' => 'ltr']); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal93a7e4fbb8709cb7edbcf616ab99cd14)): ?>
@@ -407,6 +407,7 @@
 <?php endif; ?>
                     </div>
                     <div class="col-12">
+                        <div class="form-text mb-2"><?php echo e(__('messages.appointment_time_hint')); ?></div>
                         <?php if (isset($component)) { $__componentOriginalcc0154580828f80bdab5d7fe416ed74a = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalcc0154580828f80bdab5d7fe416ed74a = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.form-textarea','data' => ['name' => 'notes','label' => __('messages.notes')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
@@ -442,6 +443,21 @@
 <?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
 <?php endif; ?>
     <?php endif; ?>
+
+       <?php $__env->startPush('scripts'); ?>
+    <?php if($bookFor): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalElement = document.getElementById('createAppointmentModal');
+            if (modalElement) {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            }
+        });
+    </script>
+    <?php endif; ?>
+<?php $__env->stopPush(); ?>
+
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\hussin\Downloads\zedan-dental-clinic\zedan\resources\views/appointments/index.blade.php ENDPATH**/ ?>

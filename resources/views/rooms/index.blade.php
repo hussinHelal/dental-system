@@ -48,7 +48,7 @@
                                         @endcan
                                         @can('delete', $room)
                                             @if($room->is_active)
-                                                <form data-ajax-form method="POST" action="{{ route('rooms.destroy', $room) }}" class="d-inline" onsubmit="return confirm('{{ __('messages.confirm_deactivate') }}')">
+                                                <form data-ajax-form method="POST" action="{{ route('rooms.destroy', $room) }}" class="d-inline" data-confirm="{{ __('messages.confirm_deactivate') }}">
                                                     @csrf @method('DELETE')
                                                     <button class="btn btn-sm btn-outline-danger" title="{{ __('messages.deactivate') }}"><i class="bi bi-slash-circle"></i></button>
                                                 </form>

@@ -7,7 +7,7 @@
 
     <div class="card zedan-card mb-3 shadow-sm">
         <div class="card-body shadow-sm">
-            <form method="GET" class="row g-2">
+            <form method="GET" action="{{ route('appointments.search') }}" class="row g-2">
                 <div class="col-md-3">
                     <input type="search" name="q" class="form-control" placeholder="{{ __('messages.search_placeholder') }}" value="{{ request('q') }}">
                 </div>
@@ -76,7 +76,7 @@
                         <tbody>
                             @foreach($appointments as $appointment)
                                 <tr>
-                                    <td data-label="{{ __('messages.date') }}">{{ $appointment->appointment_date->toDateString() }} {{ $appointment->start_time }}</td>
+                                    <td data-label="{{ __('messages.date') }}">{{ $appointment->appointment_date->toDateString() }} {{ $appointment->time_range_formatted }}</td>
                                     <td data-label="{{ __('messages.patient') }}">{{ $appointment->patient->full_name }}</td>
                                     <td data-label="{{ __('messages.doctor') }}">{{ $appointment->doctor->name }}</td>
                                     <td data-label="{{ __('messages.room') }}">{{ $appointment->room->name }}</td>

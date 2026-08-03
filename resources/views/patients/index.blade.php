@@ -3,6 +3,7 @@
 @section('title', __('messages.patients'))
 
 @section('content')
+
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm">
         <h3 class="mb-0">{{ __('messages.patients') }}</h3>
         <div class="d-flex gap-2 flex-grow-1 justify-content-end">
@@ -35,7 +36,7 @@
                             @foreach($patients as $patient)
                                 <tr>
                                     <td data-label="{{ __('messages.name') }}">
-                                        <img src="{{ $patient->photoUrl() }}" width="32" height="32" class="rounded-circle me-2" alt="">
+                                        <img src="{{ $patient->photoUrl() }}" width="32" height="32" class="rounded-circle me-2" alt="{{ $patient->full_name }}" data-image-preview style="cursor: pointer;">
                                         {{ $patient->full_name }}
                                     </td>
                                     <td data-label="{{ __('messages.phone') }}">{{ $patient->phone }}</td>
@@ -76,4 +77,7 @@
             </form>
         </x-modal>
     @endcan
+
+ 
+
 @endsection

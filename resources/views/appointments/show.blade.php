@@ -17,7 +17,7 @@
                 <dt class="col-3">{{ __('messages.room') }}</dt>
                 <dd class="col-9">{{ $appointment->room->name }}</dd>
                 <dt class="col-3">{{ __('messages.date') }}</dt>
-                <dd class="col-9">{{ $appointment->appointment_date->toDateString() }}, {{ $appointment->start_time }} - {{ $appointment->end_time }}</dd>
+                <dd class="col-9">{{ $appointment->appointment_date->toDateString() }}, {{ $appointment->time_range_formatted }}</dd>
                 <dt class="col-3">{{ __('messages.treatment') }}</dt>
                 <dd class="col-9">{{ $appointment->treatment?->name ?? '-' }}</dd>
                 <dt class="col-3">{{ __('messages.status') }}</dt>

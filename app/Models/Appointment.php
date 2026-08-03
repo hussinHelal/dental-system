@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -130,7 +131,9 @@ class Appointment extends Model
 
     public function scopeSearch($query, ?string $term)
     {
-        if (! $term) {
+        $term = trim((string) $term);
+
+        if ($term === '') {
             return $query;
         }
 
@@ -138,7 +141,36 @@ class Appointment extends Model
             $q->whereHas('patient', fn ($p) => $p->where('full_name', 'like', "%{$term}%")
                 ->orWhere('phone', 'like', "%{$term}%"))
                 ->orWhereHas('doctor', fn ($d) => $d->where('name', 'like', "%{$term}%"))
-                ->orWhereHas('room', fn ($r) => $r->where('name', 'like', "%{$term}%"));
+                ->orWhereHas('room', fn ($r) => $r->where('name', 'like', "%{$term}%"))
+                ->orWhere('visit_type', 'like', "%{$term}%")
+                ->orWhere('status', 'like', "%{$term}%");
+
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $term)) {
+                $q->orWhereDate('appointment_date', $term);
+            }
         });
+    }
+
+    public function getStartTimeFormattedAttribute(): ?string
+    {
+        if (! $this->start_time) {
+            return null;
+        }
+
+        return Carbon::createFromFormat('H:i', $this->start_time)->format('g:i A');
+    }
+
+    public function getEndTimeFormattedAttribute(): ?string
+    {
+        if (! $this->end_time) {
+            return null;
+        }
+
+        return Carbon::createFromFormat('H:i', $this->end_time)->format('g:i A');
+    }
+
+    public function getTimeRangeFormattedAttribute(): string
+    {
+        return trim(sprintf('%s - %s', $this->start_time_formatted, $this->end_time_formatted));
     }
 }

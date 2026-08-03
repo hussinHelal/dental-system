@@ -47,6 +47,7 @@ class UserManagementController extends Controller
             'username' => $data['username'],
             'password' => Hash::make($data['password']),
             'is_active' => true,
+            'working_hours' => array_filter($data['working_hours'] ?? [], fn ($value) => filled($value)) ?: null,
         ]);
 
         if ($request->hasFile('photo')) {
@@ -73,6 +74,7 @@ class UserManagementController extends Controller
 
         $user->name = $data['name'];
         $user->username = $data['username'];
+        $user->working_hours = array_filter($data['working_hours'] ?? [], fn ($value) => filled($value)) ?: null;
 
         if (! empty($data['password'])) {
             $user->password = Hash::make($data['password']);

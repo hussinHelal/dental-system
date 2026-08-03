@@ -3,7 +3,7 @@
 @section('title', $patient->full_name)
 
 @section('content')
-    <a href="{{ route('patients.index') }}" class="btn btn-sm btn-primary mb-2 ps-0 shadow-sm">
+    <a href="{{ route('patients.index') }}" class="btn btn-sm btn-primary mb-2 ps-0  shadow-sm">
         <i class="bi bi-arrow-{{ app()->getLocale() === 'ar' ? 'end' : 'start' }} icon-mirror-rtl"></i> {{ __('messages.back') }}
     </a>
 
@@ -11,7 +11,7 @@
         <div class="card-body shadow-sm">
             <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                 <div class="d-flex gap-3 align-items-center">
-                    <img src="{{ $patient->photoUrl() }}" width="64" height="64" class="rounded-circle" alt="">
+                    <img src="{{ $patient->photoUrl() }}" width="64" height="64" class="rounded-circle" alt="{{ $patient->full_name }}" data-image-preview style="cursor: pointer;">
                     <div>
                         <h4 class="mb-1">{{ $patient->full_name }}</h4>
                         <div class="text-secondary">
@@ -22,7 +22,7 @@
                     </div>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('appointments.index', ['date' => now()->toDateString()]) }}?book_for={{ $patient->id }}" class="btn btn-sm btn-primary">
+                    <a href="{{ route('appointments.index', ['date' => now()->toDateString() , 'book_for' => $patient->id ]) }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-calendar-plus"></i> {{ __('messages.book_follow_up') }}
                     </a>
                     @can('update', $patient)
@@ -31,7 +31,7 @@
                         </button>
                     @endcan
                     @can('delete', $patient)
-                        <form data-ajax-form method="POST" action="{{ route('patients.destroy', $patient) }}" onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">
+                        <form data-ajax-form method="POST" action="{{ route('patients.destroy', $patient) }}" data-confirm="{{ __('messages.confirm_delete') }}">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>
@@ -82,7 +82,7 @@
                                     @foreach($patient->appointments as $appointment)
                                         <tr>
                                             <td data-label="{{ __('messages.date') }}">
-                                                {{ $appointment->appointment_date->toDateString() }} {{ $appointment->start_time }}
+                                                {{ $appointment->appointment_date->toDateString() }} {{ $appointment->time_range_formatted }}
                                                 @if($appointment->session_number)
                                                     <span class="badge text-bg-info">{{ __('messages.session') }} {{ $appointment->session_number }}</span>
                                                 @endif
@@ -165,7 +165,7 @@
                                 @endif
 
                                 @can('delete', $payment)
-                                    <form data-ajax-form method="POST" action="{{ route('payments.destroy', $payment) }}" class="mt-2" onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">
+                                    <form data-ajax-form method="POST" action="{{ route('payments.destroy', $payment) }}" class="mt-2" data-confirm="{{ __('messages.confirm_delete') }}">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> {{ __('messages.delete') }}</button>
                                     </form>

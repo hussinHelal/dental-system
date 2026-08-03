@@ -110,7 +110,7 @@
                         <tbody>
                             @foreach($todaysAppointments as $appointment)
                                 <tr>
-                                    <td data-label="{{ __('messages.time') }}">{{ $appointment->start_time }} - {{ $appointment->end_time }}</td>
+                                    <td data-label="{{ __('messages.time') }}">{{ $appointment->time_range_formatted }}</td>
                                     <td data-label="{{ __('messages.patient') }}">{{ $appointment->patient->full_name }}</td>
                                     <td data-label="{{ __('messages.doctor') }}">{{ $appointment->doctor->name }}</td>
                                     <td data-label="{{ __('messages.room') }}">{{ $appointment->room->name }}</td>

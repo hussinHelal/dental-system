@@ -18,7 +18,19 @@ class ActivityLogController extends Controller
             ->when($request->query('event'), fn ($q, $v) => $q->where('event', $v))
             ->when($request->query('date_from'), fn ($q, $v) => $q->whereDate('created_at', '>=', $v))
             ->when($request->query('date_to'), fn ($q, $v) => $q->whereDate('created_at', '<=', $v))
-            ->when($request->query('q'), fn ($q, $term) => $q->where('description', 'like', "%{$term}%"))
+            ->when($request->query('q'), function ($q, $term) {
+                $q->where(function ($query) use ($term) {
+                    $query->where('description', 'like', "%{$term}%")
+                        ->orWhereHas('causer', fn ($sub) => $sub->where('name', 'like', "%{$term}%"))
+                        ->orWhere('log_name', 'like', "%{$term}%")
+                        ->orWhere('event', 'like', "%{$term}%")
+                        ->orWhere('subject_type', 'like', "%{$term}%");
+
+                    if (is_numeric($term)) {
+                        $query->orWhere('causer_id', $term);
+                    }
+                });
+            })
             ->orderByDesc('created_at')
             ->paginate(30)
             ->withQueryString();

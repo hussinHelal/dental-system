@@ -53,7 +53,7 @@
 
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-light dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
-                        <img src="{{ auth()->user()->avatarUrl() }}" alt="" width="24" height="24" class="rounded-circle">
+                        <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" width="24" height="24" class="rounded-circle" data-image-preview style="cursor: pointer;">
                         <span class="d-none d-md-inline">{{ auth()->user()->name }}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
@@ -125,5 +125,20 @@
             @yield('content')
         </main>
     </div>
+
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imagePreviewModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="" alt="" id="imagePreviewModalImg" class="img-fluid rounded shadow-sm">
+                </div>
+            </div>
+        </div>
+    </div>
+    @stack('scripts')
 </body>
 </html>
