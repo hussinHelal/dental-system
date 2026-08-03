@@ -1,0 +1,58 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Str;
+
+class ProductionSeeder extends Seeder
+{
+    /**
+     * Creates just the two roles and one Doctor/admin login - no demo
+     * doctors, rooms, patients, treatments, inventory, appointments, or
+     * payments. Intended for a real clinic's first launch (e.g. a
+     * packaged NativePHP desktop build), where DatabaseSeeder's demo
+     * data would be wrong to ship.
+     *
+     * The admin username/password come from .env so every deployment
+     * doesn't share the same hardcoded default credentials. If unset,
+     * falls back to username "admin" and a random password that's
+     * printed once to the log - check storage/logs/laravel.log after
+     * first launch if you didn't set ADMIN_USERNAME/ADMIN_PASSWORD.
+     */
+    public function run(): void
+    {
+        Role::firstOrCreate(['name' => User::ROLE_DOCTOR, 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => User::ROLE_RECEPTIONIST, 'guard_name' => 'web']);
+
+        if (User::count() > 0) {
+            return;
+        }
+
+        $username = config('clinic.admin_username');
+        $password = config('clinic.admin_password');
+        $generatedPassword = null;
+
+        if (! $password) {
+            $generatedPassword = Str::password(12);
+            $password = $generatedPassword;
+        }
+
+        $admin = User::create([
+            'name' => config('clinic.admin_name'),
+            'username' => $username,
+            'password' => Hash::make($password),
+            'is_active' => true,
+        ]);
+        $admin->assignRole(User::ROLE_DOCTOR);
+
+        if ($generatedPassword) {
+            logger()->warning(
+                "ProductionSeeder: generated first-run admin credentials - username [{$username}] password [{$generatedPassword}]. Log in and change this immediately from the Profile page."
+            );
+        }
+    }
+}

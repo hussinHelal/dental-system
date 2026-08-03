@@ -1,0 +1,170 @@
+/*
+ * Zedan custom theme layer - sits on top of Bootstrap 5.3 so the app
+ * doesn't look like a stock scaffold. Uses Bootstrap 5.3's CSS-variable
+ * color-mode system: [data-bs-theme="dark"] on <html> flips the whole
+ * palette automatically, and the overrides below adjust just the
+ * clinic's brand accents in each mode.
+ */
+
+:root {
+  --zedan-primary: #2f6fed;
+  --zedan-primary-dark: #1f4fb0;
+  --zedan-accent: #5ec6c0;
+  --zedan-bg-soft: #f4f8fd;
+  --zedan-radius: 0.85rem;
+  --zedan-shadow-sm: 0 2px 8px rgba(24, 51, 97, 0.06);
+  --zedan-shadow-md: 0 8px 24px rgba(24, 51, 97, 0.10);
+
+  --bs-primary: var(--zedan-primary);
+  --bs-primary-rgb: 47, 111, 237;
+  --bs-body-bg: var(--zedan-bg-soft);
+  --bs-border-radius: var(--zedan-radius);
+  --bs-border-radius-lg: calc(var(--zedan-radius) + 0.25rem);
+  --bs-border-radius-sm: calc(var(--zedan-radius) - 0.35rem);
+}
+
+[data-bs-theme="dark"] {
+  --zedan-primary: #6f9aef;
+  --zedan-primary-dark: #4f74c4;
+  --bs-primary: var(--zedan-primary);
+  --bs-primary-rgb: 111, 154, 239;
+  --zedan-bg-soft: #1b2330;
+  --bs-body-bg: #1b2330;
+  --bs-body-color: #dbe2ee;
+  --zedan-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --zedan-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+[data-bs-theme="dark"] .zedan-navbar {
+  background: linear-gradient(135deg, #3a5a9c, #2c4577);
+}
+
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .zedan-card,
+[data-bs-theme="dark"] .zedan-stat-card {
+  background-color: #232c3d;
+  border: 1px solid #2e3849;
+}
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+[lang="ar"] body {
+  font-family: "Cairo", "Tajawal", system-ui, sans-serif;
+}
+
+/* Navbar */
+.zedan-navbar {
+  background: linear-gradient(135deg, var(--zedan-primary), var(--zedan-primary-dark));
+  box-shadow: var(--zedan-shadow-sm);
+}
+
+.zedan-navbar .navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Sidebar */
+.zedan-sidebar {
+  background-color: var(--bs-body-bg);
+  border-inline-end: 1px solid var(--bs-border-color);
+  min-height: calc(100vh - 56px);
+}
+
+.zedan-sidebar .nav-link {
+  border-radius: var(--zedan-radius);
+  margin-bottom: 0.25rem;
+  color: var(--bs-body-color);
+}
+
+.zedan-sidebar .nav-link.active {
+  background-color: var(--zedan-primary);
+  color: #fff;
+}
+
+.zedan-sidebar .nav-link:hover:not(.active) {
+  background-color: rgba(47, 111, 237, 0.08);
+}
+
+/* Cards & surfaces */
+.zedan-card {
+  border: none;
+  border-radius: var(--zedan-radius);
+  box-shadow: var(--zedan-shadow-sm);
+}
+
+.zedan-stat-card {
+  border-radius: var(--zedan-radius);
+  box-shadow: var(--zedan-shadow-sm);
+  border: none;
+}
+
+/* Low stock / status accents */
+.badge-low-stock {
+  background-color: #dc3545;
+}
+
+/* Mobile: turn wide tables into stacked cards */
+@media (max-width: 767.98px) {
+  table.zedan-responsive-table thead {
+    display: none;
+  }
+
+  table.zedan-responsive-table,
+  table.zedan-responsive-table tbody,
+  table.zedan-responsive-table tr,
+  table.zedan-responsive-table td {
+    display: block;
+    width: 100%;
+  }
+
+  table.zedan-responsive-table tr {
+    margin-bottom: 1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--zedan-radius);
+    box-shadow: var(--zedan-shadow-sm);
+    padding: 0.5rem;
+  }
+
+  table.zedan-responsive-table td {
+    text-align: start !important;
+    padding: 0.4rem 0.6rem;
+    border: none;
+  }
+
+  table.zedan-responsive-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.15rem;
+  }
+
+  .modal-dialog {
+    margin: 0;
+  }
+
+  .modal.fade .modal-dialog {
+    min-height: 100vh;
+  }
+
+  .modal-content {
+    min-height: 100vh;
+    border-radius: 0;
+  }
+}
+
+/* Icons that need mirroring in RTL (arrows, chevrons used for nav) */
+[dir="rtl"] .icon-mirror-rtl {
+  transform: scaleX(-1);
+  display: inline-block;
+}
+
+.empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--bs-secondary-color);
+}

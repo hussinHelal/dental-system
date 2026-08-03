@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('patients', function (Blueprint $table) {
+            $table->id();
+            $table->string('full_name');
+            // Duplicate-checked in the Form Request, not a hard unique
+            // constraint, so a mistyped digit can still be corrected
+            // via normal validation messaging rather than a DB error.
+            $table->string('phone')->index();
+            $table->date('date_of_birth')->nullable();
+            $table->unsignedTinyInteger('age')->nullable();
+            $table->text('address')->nullable();
+            $table->enum('gender', ['male', 'female'])->nullable();
+            $table->text('notes')->nullable();
+            $table->string('photo')->nullable();
+            $table->foreignId('created_by')->nullable()
+                ->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('patients');
+    }
+};
