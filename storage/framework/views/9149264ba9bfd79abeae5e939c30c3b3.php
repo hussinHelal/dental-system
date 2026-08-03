@@ -108,7 +108,7 @@
             </div>
         </div>
 
-        <main class="flex-grow-1 p-3 p-md-4">
+        <main class="flex-grow-1 p-3 p-md-4 d-flex flex-column">
             <?php if(session('success')): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <?php echo e(session('success')); ?>
@@ -124,7 +124,13 @@
                 </div>
             <?php endif; ?>
 
-            <?php echo $__env->yieldContent('content'); ?>
+            <div class="flex-grow-1">
+                <?php echo $__env->yieldContent('content'); ?>
+            </div>
+
+            <footer class="text-center text-muted small fw-normal mt-3 pt-2 border-top opacity-90">
+                Created by Hussin Helal © 2026
+            </footer>
         </main>
     </div>
 

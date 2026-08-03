@@ -126,7 +126,7 @@
                 @yield('content')
             </div>
 
-            <footer class="text-center text-muted small fw-semibold mt-4 pt-3 border-top">
+            <footer class="text-center text-muted small fw-normal mt-3 pt-2 border-top opacity-90">
                 Created by Hussin Helal © 2026
             </footer>
         </main>
