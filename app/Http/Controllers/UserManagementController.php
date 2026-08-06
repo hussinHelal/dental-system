@@ -18,7 +18,9 @@ class UserManagementController extends Controller
     {
         $this->authorize('viewAny', User::class);
 
-        $staff = User::role(User::ROLE_RECEPTIONIST)
+        $staff = User::whereHas('roles', function ($query) {
+                $query->whereIn('name', [User::ROLE_RECEPTIONIST, User::ROLE_DOCTOR]);
+            })
             ->when($request->query('q'), fn ($q, $term) => $q->where(function ($qq) use ($term) {
                 $qq->where('name', 'like', "%{$term}%")
                    ->orWhere('username', 'like', "%{$term}%");
@@ -41,22 +43,29 @@ class UserManagementController extends Controller
         $this->authorize('create', User::class);
 
         $data = $request->validated();
+        $requestedRole = $data['role'] ?? null;
+        $role = in_array($requestedRole, [User::ROLE_DOCTOR, User::ROLE_RECEPTIONIST], true)
+            ? $requestedRole
+            : User::ROLE_RECEPTIONIST;
 
         $user = User::create([
             'name' => $data['name'],
             'username' => $data['username'],
             'password' => Hash::make($data['password']),
             'is_active' => true,
-            'working_hours' => array_filter($data['working_hours'] ?? [], fn ($value) => filled($value)) ?: null,
+            'working_hours' => $data['working_hours'] ?? null,
         ]);
 
         if ($request->hasFile('photo')) {
             $user->update(['avatar' => $this->storeResizedImage($request->file('photo'), 'avatars')]);
         }
 
-        $user->assignRole(User::ROLE_RECEPTIONIST);
+        $user->syncRoles([$role]);
 
-        return redirect()->route('users.index')->with('success', __('messages.staff_created'));
+        $redirectRoute = $request->boolean('create_another') ? 'users.create' : 'users.index';
+        $successMessage = $request->boolean('create_another') ? __('messages.staff_created_and_another') : __('messages.staff_created');
+
+        return redirect()->route($redirectRoute)->with('success', $successMessage);
     }
 
     public function edit(User $user)
@@ -74,7 +83,7 @@ class UserManagementController extends Controller
 
         $user->name = $data['name'];
         $user->username = $data['username'];
-        $user->working_hours = array_filter($data['working_hours'] ?? [], fn ($value) => filled($value)) ?: null;
+        $user->working_hours = $data['working_hours'] ?? null;
 
         if (! empty($data['password'])) {
             $user->password = Hash::make($data['password']);

@@ -3,7 +3,7 @@
 @section('title', __('messages.doctors'))
 
 @section('content')
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm p-2">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm p-3 rounded-4 zedan-page-header">
         <h3 class="mb-0">{{ __('messages.doctors') }}</h3>
         <div class="d-flex gap-2 flex-grow-1 justify-content-end">
             <x-search-bar :placeholder="__('messages.search_doctors')" />
@@ -78,16 +78,7 @@
                                             <x-form-input name="phone" :label="__('messages.phone')" :value="$doctor->phone" />
                                             <div class="mb-3">
                                                 <label class="form-label">{{ __('messages.working_hours') }}</label>
-                                                <div class="row g-2">
-                                                    @foreach(['sat','sun','mon','tue','wed','thu','fri'] as $day)
-                                                        <div class="col-6">
-                                                            <label class="form-label small">{{ __('messages.day_'.$day) }}</label>
-                                                            <input type="text" name="working_hours[{{ $day }}]" class="form-control"
-                                                                value="{{ old('working_hours.'.$day, $doctor->working_hours_for_form[$day] ?? '') }}"
-                                                                placeholder="{{ __('messages.working_hours_placeholder') }}" dir="ltr">
-                                                        </div>
-                                                    @endforeach
-                                                </div>
+                                                <textarea name="working_hours" class="form-control" rows="3" placeholder="{{ __('messages.working_hours_placeholder') }}" dir="ltr">{{ old('working_hours', $doctor->working_hours) }}</textarea>
                                                 <div class="form-text">{{ __('messages.working_hours_hint') }}</div>
                                             </div>
                                             <div class="mb-3">
@@ -115,16 +106,7 @@
                 <x-form-input name="phone" :label="__('messages.phone')" />
                 <div class="mb-3">
                     <label class="form-label">{{ __('messages.working_hours') }}</label>
-                    <div class="row g-2">
-                        @foreach(['sat','sun','mon','tue','wed','thu','fri'] as $day)
-                            <div class="col-6">
-                                <label class="form-label small">{{ __('messages.day_'.$day) }}</label>
-                                <input type="text" name="working_hours[{{ $day }}]" class="form-control"
-                                    value="{{ old('working_hours.'.$day) }}"
-                                    placeholder="{{ __('messages.working_hours_placeholder') }}" dir="ltr">
-                            </div>
-                        @endforeach
-                    </div>
+                    <textarea name="working_hours" class="form-control" rows="3" placeholder="{{ __('messages.working_hours_placeholder') }}" dir="ltr">{{ old('working_hours') }}</textarea>
                     <div class="form-text">{{ __('messages.working_hours_hint') }}</div>
                 </div>
                 <div class="mb-3">

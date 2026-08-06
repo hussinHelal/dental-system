@@ -27,7 +27,6 @@ class Doctor extends Model
     protected function casts(): array
     {
         return [
-            'working_hours' => 'array',
             'is_active' => 'boolean',
         ];
     }
@@ -60,44 +59,11 @@ class Doctor extends Model
 
     public function getWorkingHoursSummaryAttribute(): string
     {
-        if (empty($this->working_hours) || ! is_array($this->working_hours)) {
+        if (empty($this->working_hours) || ! is_string($this->working_hours)) {
             return __('messages.closed');
         }
 
-        return collect($this->working_hours)
-            ->filter()
-            ->map(fn ($hours, $day) => __('messages.day_'.$day).': '.$this->formatWorkingHoursRange($hours))
-            ->implode(', ') ?: __('messages.closed');
-    }
-
-    public function getWorkingHoursForFormAttribute(): array
-    {
-        if (empty($this->working_hours) || ! is_array($this->working_hours)) {
-            return [];
-        }
-
-        return collect($this->working_hours)
-            ->mapWithKeys(fn ($hours, $day) => [$day => $this->formatWorkingHoursRange($hours)])
-            ->all();
-    }
-
-    private function formatWorkingHoursRange(string $hours): string
-    {
-        $parts = explode('-', $hours);
-        if (count($parts) !== 2) {
-            return $hours;
-        }
-
-        return sprintf('%s - %s', $this->formatWorkingHoursTime(trim($parts[0])), $this->formatWorkingHoursTime(trim($parts[1])));
-    }
-
-    private function formatWorkingHoursTime(string $time): string
-    {
-        try {
-            return Carbon::createFromFormat('H:i', $time)->format('g:i A');
-        } catch (\Throwable $e) {
-            return $time;
-        }
+        return trim($this->working_hours) ?: __('messages.closed');
     }
 
     public function scopeActive($query)

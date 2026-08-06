@@ -11,6 +11,9 @@
   --zedan-primary-dark: #1f4fb0;
   --zedan-accent: #5ec6c0;
   --zedan-bg-soft: #f4f8fd;
+  --zedan-surface: #ffffff;
+  --zedan-surface-alt: #f7faff;
+  --zedan-border-soft: rgba(47, 111, 237, 0.16);
   --zedan-radius: 0.85rem;
   --zedan-shadow-sm: 0 2px 8px rgba(24, 51, 97, 0.06);
   --zedan-shadow-md: 0 8px 24px rgba(24, 51, 97, 0.10);
@@ -29,6 +32,9 @@
   --bs-primary: var(--zedan-primary);
   --bs-primary-rgb: 111, 154, 239;
   --zedan-bg-soft: #1b2330;
+  --zedan-surface: #232c3d;
+  --zedan-surface-alt: #1c2431;
+  --zedan-border-soft: rgba(111, 154, 239, 0.22);
   --bs-body-bg: #1b2330;
   --bs-body-color: #dbe2ee;
   --zedan-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -49,6 +55,7 @@
 body {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   line-height: 1.55;
+  background: linear-gradient(180deg, var(--zedan-bg-soft), var(--zedan-surface-alt));
 }
 
 .btn,
@@ -57,18 +64,30 @@ body {
 .input-group-text,
 .card,
 .table {
-  transition: all 0.2s ease-in-out;
+  transition: none !important;
 }
 
 .btn:hover,
+.btn:focus,
 .form-control:focus,
-.form-select:focus {
-  box-shadow: 0 0 0 0.2rem rgba(47, 111, 237, 0.15);
+.form-select:focus,
+.card:hover,
+.zedan-card:hover,
+.zedan-stat-card:hover {
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .form-control:focus,
 .form-select:focus {
   border-color: var(--zedan-primary);
+  box-shadow: 0 0 0 0.2rem rgba(47, 111, 237, 0.15);
+}
+
+.modal,
+.modal-dialog,
+.modal-content {
+  transition: none !important;
 }
 
 [lang="ar"] body {
@@ -113,12 +132,58 @@ body {
   border: none;
   border-radius: var(--zedan-radius);
   box-shadow: var(--zedan-shadow-sm);
+  background: linear-gradient(180deg, var(--zedan-surface), var(--zedan-surface-alt));
 }
 
 .zedan-stat-card {
   border-radius: var(--zedan-radius);
   box-shadow: var(--zedan-shadow-sm);
-  border: none;
+  border: 1px solid var(--zedan-border-soft);
+  background: linear-gradient(135deg, var(--zedan-surface), var(--zedan-surface-alt));
+}
+
+.zedan-page-header {
+  background: linear-gradient(135deg, rgba(47, 111, 237, 0.12), rgba(94, 198, 192, 0.15));
+  border: 1px solid var(--zedan-border-soft);
+  border-radius: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.zedan-page-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255,255,255,0.35), transparent 55%);
+  pointer-events: none;
+}
+
+.zedan-page-header h3,
+.zedan-page-header p,
+.zedan-page-header .text-muted {
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--zedan-primary), var(--zedan-primary-dark));
+  border-color: transparent;
+}
+
+.btn-outline-primary {
+  color: var(--zedan-primary);
+  border-color: var(--zedan-border-soft);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background-color: rgba(47, 111, 237, 0.10);
+  color: var(--zedan-primary-dark);
+  box-shadow: none;
+}
+
+.table {
+  --bs-table-color: var(--bs-body-color);
+  --bs-table-bg: transparent;
 }
 
 /* Low stock / status accents */

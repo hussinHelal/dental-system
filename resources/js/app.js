@@ -10,7 +10,20 @@ window.bootstrap = bootstrap;
  */
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-bs-theme', theme);
+
+    const button = document.querySelector('[data-theme-toggle]');
+    if (!button) return;
+
+    const icon = button.querySelector('i');
+    if (icon) {
+        icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars';
+    }
+    button.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyTheme(document.documentElement.getAttribute('data-bs-theme') || 'light');
+});
 
 document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-theme-toggle]');

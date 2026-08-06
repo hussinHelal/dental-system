@@ -29,17 +29,7 @@
                 <x-form-input name="username" :label="__('messages.username')" :value="$user->username" required />
                 <div class="mb-3">
                     <label class="form-label">{{ __('messages.working_hours') }}</label>
-                    <div class="row g-2">
-                        @foreach(['sat','sun','mon','tue','wed','thu','fri'] as $day)
-                            <div class="col-6">
-                                <label class="form-label small">{{ __('messages.day_'.$day) }}</label>
-                                <input type="text" name="working_hours[{{ $day }}]" class="form-control"
-                                    value="{{ old('working_hours.'.$day, $user->working_hours_for_form[$day] ?? '') }}"
-                                    placeholder="{{ __('messages.working_hours_placeholder') }}"
-                                    dir="ltr">
-                            </div>
-                        @endforeach
-                    </div>
+                    <textarea name="working_hours" class="form-control" rows="3" placeholder="{{ __('messages.working_hours_placeholder') }}" dir="ltr">{{ old('working_hours', $user->working_hours) }}</textarea>
                     <div class="form-text">{{ __('messages.working_hours_hint') }}</div>
                 </div>
                 <x-form-input type="password" name="password" :label="__('messages.new_password_optional')" />

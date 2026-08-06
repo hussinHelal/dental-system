@@ -3,7 +3,7 @@
 @section('title', __('messages.treatments'))
 
 @section('content')
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm p-2">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm p-3 rounded-4 zedan-page-header">
         <h3 class="mb-0">{{ __('messages.treatments') }}</h3>
         <div class="d-flex gap-2 flex-grow-1 justify-content-end flex-wrap">
             <x-search-bar :placeholder="__('messages.search_treatments')" />

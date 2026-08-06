@@ -8,7 +8,7 @@
         $nextDate = \Illuminate\Support\Carbon::parse($date)->addDay()->toDateString();
     @endphp
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm p-2">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm p-3 rounded-4 zedan-page-header">
         <h3 class="mb-0">{{ __('messages.appointments') }}</h3>
         <div class="d-flex gap-2">
             <a href="{{ route('appointments.search') }}" class="btn btn-outline-secondary">
