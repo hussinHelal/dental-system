@@ -8,7 +8,7 @@ class ProfileUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->id === auth()->id();
     }
 
     public function rules(): array
@@ -16,7 +16,7 @@ class ProfileUpdateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:150'],
             'photo' => ['nullable', 'image', 'max:2048'],
-            'current_password' => ['required_with:password', 'nullable', 'current_password'],
+            'current_password' => ['required_with:password',  'current_password'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
     }

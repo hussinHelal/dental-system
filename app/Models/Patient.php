@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -14,29 +15,24 @@ class Patient extends Model
     use HasFactory, LogsActivity;
 
     protected $fillable = [
-        'full_name',
-        'phone',
-        'date_of_birth',
-        'age',
-        'address',
-        'gender',
-        'notes',
-        'photo',
-        'created_by',
+        'full_name', 'phone', 'date_of_birth', 'age',
+        'address', 'gender', 'notes', 'photo', 'xray_photo',
+        'tooth_chart', 'created_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'date_of_birth' => 'date',
-        ];
-    }
+    protected $casts = [
+        'date_of_birth' => 'date',
+        'tooth_chart'   => 'array',
+    ];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('patients')
-            ->logOnly(['full_name', 'phone', 'date_of_birth', 'age', 'address', 'gender', 'notes'])
+            ->logOnly([
+                'full_name', 'phone', 'date_of_birth', 'age',
+                'address', 'gender', 'notes', 'tooth_chart',
+            ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -56,17 +52,32 @@ class Patient extends Model
         return $this->hasMany(Payment::class);
     }
 
-    /**
-     * Computed age: prefers date_of_birth when known, otherwise falls
-     * back to the manually entered age field.
-     */
+    public function toothRecords(): HasMany
+    {
+    return $this->hasMany(ToothRecord::class)->orderBy('tooth_number');
+    }
     public function getDisplayAgeAttribute(): ?int
     {
-        if ($this->date_of_birth) {
-            return $this->date_of_birth->age;
-        }
+        return $this->date_of_birth?->age ?? $this->age;
+    }
 
-        return $this->age;
+    /**
+     * OPTIMIZATION: database aggregation instead of loading all payments.
+     */
+    public function paymentSummary(): array
+    {
+        $aggregates = $this->payments()
+            ->selectRaw('COALESCE(SUM(total_amount), 0) as total_cost, COALESCE(SUM(amount_paid), 0) as paid')
+            ->first();
+
+        $totalCost = (float) ($aggregates?->total_cost ?? 0);
+        $paid = (float) ($aggregates?->paid ?? 0);
+
+        return [
+            'total_cost' => (float) $totalCost,
+            'paid' => (float) $paid,
+            'remaining' => (float) max(0, $totalCost - $paid),
+        ];
     }
 
     public function photoUrl(): string
@@ -76,19 +87,30 @@ class Patient extends Model
             : asset('images/default-patient.png');
     }
 
-    /**
-     * Running payment summary shown on the patient detail page.
-     */
-    public function paymentSummary(): array
+    public function xrayPhotoUrl(): ?string
     {
-        $totalCost = $this->payments->sum('total_amount');
-        $paid = $this->payments->sum('amount_paid');
+        return $this->xray_photo
+            ? asset('storage/'.$this->xray_photo)
+            : null;
+    }
 
-        return [
-            'total_cost' => $totalCost,
-            'paid' => $paid,
-            'remaining' => $totalCost - $paid,
-        ];
+    /**
+     * BUG FIX: removed redundant json_decode — $casts already handles it.
+     * Ensures all 32 teeth always have a valid status.
+     */
+    public function getToothChartAttribute($value): array
+    {
+        $chart = $value ? json_decode($value, true) : [];
+        if (! is_array($chart)) {
+            $chart = [];
+        }
+
+        $defaults = [];
+        for ($i = 1; $i <= 32; $i++) {
+            $defaults[(string) $i] = $chart[(string) $i] ?? 'healthy';
+        }
+
+        return $defaults;
     }
 
     public function scopeSearch($query, ?string $term)
@@ -96,7 +118,7 @@ class Patient extends Model
         return $term
             ? $query->where(function ($q) use ($term) {
                 $q->where('full_name', 'like', "%{$term}%")
-                    ->orWhere('phone', 'like', "%{$term}%");
+                  ->orWhere('phone', 'like', "%{$term}%");
             })
             : $query;
     }

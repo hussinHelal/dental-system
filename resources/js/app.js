@@ -342,15 +342,28 @@ document.addEventListener('submit', async (e) => {
     try {
         const formData = new FormData(form);
         const method = (formData.get('_method') || form.method || 'POST').toString().toUpperCase();
+        // Debug info: log the target action and form keys
+        console.log('AJAX submit:', form.action, method);
+        for (const pair of formData.entries()) {
+            console.log('  field:', pair[0], pair[1]);
+        }
 
-        const response = await fetch(form.action, {
-            method: method === 'GET' ? 'GET' : 'POST',
+        const fetchOptions = {
+            method,
+            credentials: 'same-origin',
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
             },
-            body: formData,
-        });
+        };
+
+        // Do not attach a request body to GET/HEAD requests (fetch throws)
+        if (method !== 'GET' && method !== 'HEAD') {
+            fetchOptions.body = formData;
+        }
+
+        const response = await fetch(form.action, fetchOptions);
 
         const data = await response.json().catch(() => ({}));
 
@@ -374,8 +387,9 @@ document.addEventListener('submit', async (e) => {
             window.location.reload();
         }
     } catch (err) {
-        console.error('AJAX form submit failed', err);
-        alert(window.i18n?.networkError || 'Network error. Please try again.');
+            console.error('AJAX form submit failed', err);
+            const message = err?.message || window.i18n?.networkError || 'Network error. Please try again.';
+            alert(`Network error: ${message}`);
     } finally {
         submitBtn?.removeAttribute('disabled');
     }
@@ -410,3 +424,5 @@ document.addEventListener('DOMContentLoaded', () => {
         },
     });
 });
+
+// (removed stray duplicate success block)

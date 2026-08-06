@@ -29,17 +29,21 @@ class PatientController extends Controller
     {
         $this->authorize('view', $patient);
 
-        $patient->load([
-            'appointments.doctor',
-            'appointments.room',
-            'appointments.treatment',
-            'payments.treatment',
-            'payments.installments',
-        ]);
+        /* CRITICAL FIX: paginate instead of loading ALL history */
+        $appointments = $patient->appointments()
+            ->with(['doctor', 'room', 'treatment'])
+            ->paginate(10);
+
+        $payments = $patient->payments()
+            ->with(['treatment', 'installments' => fn ($query) => $query->orderBy('paid_date')])
+            ->latest()
+            ->paginate(10);
 
         $summary = $patient->paymentSummary();
 
-        return view('patients.show', compact('patient', 'summary'));
+        return view('patients.show', compact(
+            'patient', 'appointments', 'payments', 'summary'
+        ));
     }
 
     public function store(PatientRequest $request)
@@ -53,19 +57,22 @@ class PatientController extends Controller
             $data['photo'] = $this->storeResizedImage($request->file('photo'), 'patients');
         }
 
-        $patient = Patient::create($data);
-
-        if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => __('messages.patient_created'),
-                'patient' => $patient,
-                'redirect' => route('patients.show', $patient),
-            ]);
+        if ($request->hasFile('xray_photo')) {
+            $data['xray_photo'] = $this->storeResizedImage(
+                $request->file('xray_photo'), 'patients/xrays', 1600
+            );
         }
 
-        return redirect()->route('patients.show', $patient)
-            ->with('success', __('messages.patient_created'));
+        $data['tooth_chart'] = $this->defaultToothChart();
+
+        $patient = Patient::create($data);
+
+        return $this->respondSuccess(
+            $request,
+            __('messages.patient_created'),
+            'patients.show',
+            ['patient' => $patient]
+        );
     }
 
     public function update(PatientRequest $request, Patient $patient)
@@ -74,6 +81,7 @@ class PatientController extends Controller
 
         $data = $request->validated();
 
+        /* BUG FIX: delete old images before storing new ones */
         if ($request->hasFile('photo')) {
             if ($patient->photo) {
                 Storage::disk('public')->delete($patient->photo);
@@ -81,17 +89,63 @@ class PatientController extends Controller
             $data['photo'] = $this->storeResizedImage($request->file('photo'), 'patients');
         }
 
+        if ($request->hasFile('xray_photo')) {
+            if ($patient->xray_photo) {
+                Storage::disk('public')->delete($patient->xray_photo);
+            }
+            $data['xray_photo'] = $this->storeResizedImage(
+                $request->file('xray_photo'), 'patients/xrays', 1600
+            );
+        }
+
+        if ($request->has('tooth_chart')) {
+            $allowed = ['healthy', 'decayed', 'treated', 'missing', 'root_canal', 'crown'];
+            $cleaned = [];
+            foreach ($request->input('tooth_chart', []) as $num => $status) {
+                if (is_numeric($num) && in_array($status, $allowed, true)) {
+                    $cleaned[$num] = $status;
+                }
+            }
+            $data['tooth_chart'] = $cleaned ?: $this->defaultToothChart();
+        }
+
         $patient->update($data);
 
-        return $this->respondSuccess($request, __('messages.patient_updated'), 'patients.show', ['patient' => $patient]);
+        return $this->respondSuccess(
+            $request,
+            __('messages.patient_updated'),
+            'patients.show',
+            ['patient' => $patient]
+        );
     }
 
     public function destroy(Request $request, Patient $patient)
     {
         $this->authorize('delete', $patient);
 
+        /* BUG FIX: clean up stored files before delete */
+        if ($patient->photo) {
+            Storage::disk('public')->delete($patient->photo);
+        }
+        if ($patient->xray_photo) {
+            Storage::disk('public')->delete($patient->xray_photo);
+        }
+
         $patient->delete();
 
-        return $this->respondSuccess($request, __('messages.patient_deleted'), 'patients.index');
+        return $this->respondSuccess(
+            $request,
+            __('messages.patient_deleted'),
+            'patients.index'
+        );
+    }
+
+    private function defaultToothChart(): array
+    {
+        $chart = [];
+        for ($i = 1; $i <= 32; $i++) {
+            $chart[(string) $i] = 'healthy';
+        }
+        return $chart;
     }
 }

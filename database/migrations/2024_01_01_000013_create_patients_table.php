@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('photo')->nullable();
             $table->foreignId('created_by')->nullable()
                 ->constrained('users')->nullOnDelete();
+            $table->string('xray_photo')->nullable()->after('photo');
+            $table->json('tooth_chart')->nullable()->after('xray_photo');
             $table->timestamps();
         });
     }
@@ -30,5 +32,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('patients');
+        Schema::table('patients', function (Blueprint $table) {
+            $table->dropColumn(['xray_photo', 'tooth_chart']);
+        });
     }
 };

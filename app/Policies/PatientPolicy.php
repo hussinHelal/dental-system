@@ -22,9 +22,12 @@ class PatientPolicy
         return $user->isDoctor() || $user->isReceptionist();
     }
 
-    public function update(User $user, Patient $patient): bool
+       public function update(User $user, Patient $patient): bool
     {
-        return $user->isDoctor() || $user->isReceptionist();
+        /* BUG FIX: allow editing if created_by is null (legacy/seeded data) */
+        return $user->isDoctor()
+            || $patient->created_by === null
+            || $user->id === $patient->created_by;
     }
 
     public function delete(User $user, Patient $patient): bool

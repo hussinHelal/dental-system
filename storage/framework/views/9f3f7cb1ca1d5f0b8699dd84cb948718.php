@@ -18,6 +18,10 @@
                     <i class="bi bi-plus-lg"></i> <?php echo e(__('messages.book_appointment')); ?>
 
                 </button>
+                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#quickPatientModal">
+                    <i class="bi bi-person-plus"></i> <?php echo e(__('messages.new_patient')); ?>
+
+                </button>
             <?php endif; ?>
         </div>
     </div>
@@ -208,27 +212,22 @@
             <form data-ajax-form method="POST" action="<?php echo e(route('appointments.store')); ?>">
                 <?php echo csrf_field(); ?>
                 <div class="row">
-                    <div class="col-md-6">
-                        <?php if (isset($component)) { $__componentOriginal67ad07a4b593e690d435fee92e6413bb = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal67ad07a4b593e690d435fee92e6413bb = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.form-select','data' => ['name' => 'patient_id','label' => __('messages.patient'),'required' => true,'placeholder' => __('messages.select_patient'),'options' => \App\Models\Patient::orderBy('full_name')->pluck('full_name', 'id'),'value' => $bookFor]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('form-select'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['name' => 'patient_id','label' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.patient')),'required' => true,'placeholder' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('messages.select_patient')),'options' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(\App\Models\Patient::orderBy('full_name')->pluck('full_name', 'id')),'value' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($bookFor)]); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal67ad07a4b593e690d435fee92e6413bb)): ?>
-<?php $attributes = $__attributesOriginal67ad07a4b593e690d435fee92e6413bb; ?>
-<?php unset($__attributesOriginal67ad07a4b593e690d435fee92e6413bb); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal67ad07a4b593e690d435fee92e6413bb)): ?>
-<?php $component = $__componentOriginal67ad07a4b593e690d435fee92e6413bb; ?>
-<?php unset($__componentOriginal67ad07a4b593e690d435fee92e6413bb); ?>
-<?php endif; ?>
+                    
+                    <!-- In the create appointment modal, replace the patient_id select -->
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label"><?php echo e(__('messages.patient')); ?></label>
+                        <div class="input-group">
+                            <select name="patient_id" class="form-select" id="appointmentPatientSelect" required>
+                                <option value=""><?php echo e(__('messages.select_patient')); ?></option>
+                                <?php $__currentLoopData = $patients; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $name): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($id); ?>" <?php if($bookFor == $id): echo 'selected'; endif; ?>><?php echo e($name); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </select>
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickPatientModal">
+                                <i class="bi bi-plus-lg"></i> <?php echo e(__('messages.new')); ?>
+
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <?php if (isset($component)) { $__componentOriginal67ad07a4b593e690d435fee92e6413bb = $component; } ?>
@@ -456,6 +455,98 @@
         });
     </script>
     <?php endif; ?>
+<?php $__env->stopPush(); ?>
+
+<!-- Quick Add Patient Modal -->
+<?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['id' => 'quickPatientModal','title' => ''.e(__('messages.quick_add_patient')).'']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'quickPatientModal','title' => ''.e(__('messages.quick_add_patient')).'']); ?>
+    <form id="quickPatientForm" method="POST" data-ajax-form action="<?php echo e(route('appointments.quick-patient')); ?>">
+        <?php echo csrf_field(); ?>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><?php echo e(__('messages.full_name')); ?> *</label>
+                <input type="text" name="full_name" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><?php echo e(__('messages.phone')); ?> *</label>
+                <input type="text" name="phone" class="form-control" required>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><?php echo e(__('messages.date_of_birth')); ?></label>
+                <input type="date" name="date_of_birth" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><?php echo e(__('messages.age')); ?></label>
+                <input type="number" name="age" class="form-control" min="0" max="130">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><?php echo e(__('messages.gender')); ?></label>
+                <select name="gender" class="form-select">
+                    <option value=""><?php echo e(__('messages.select')); ?></option>
+                    <option value="male"><?php echo e(__('messages.male')); ?></option>
+                    <option value="female"><?php echo e(__('messages.female')); ?></option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><?php echo e(__('messages.address')); ?></label>
+                <input type="text" name="address" class="form-control">
+            </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo e(__('messages.cancel')); ?></button>
+            <button type="submit" class="btn btn-primary"><?php echo e(__('messages.create_patient')); ?></button>
+        </div>
+    </form>
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+
+<!-- rely on the global `data-ajax-form` handler in resources/js/app.js -->
+
+<?php $__env->startPush('scripts'); ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modalEl = document.getElementById('createAppointmentModal');
+    if (!modalEl) return;
+
+    // Ensure any stray backdrop is removed when the modal is hidden
+    modalEl.addEventListener('hidden.bs.modal', function () {
+        // Remove any leftover backdrop elements
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        // Ensure body class removed
+        document.body.classList.remove('modal-open');
+    });
+
+    // Also guard against the rare case where multiple backdrops exist when hiding
+    modalEl.addEventListener('hide.bs.modal', function () {
+        setTimeout(() => {
+            if (!document.querySelector('.modal.show')) {
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                document.body.classList.remove('modal-open');
+            }
+        }, 100);
+    });
+});
+</script>
 <?php $__env->stopPush(); ?>
 
 <?php $__env->stopSection(); ?>

@@ -13,6 +13,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TreatmentController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\ToothChartController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -87,6 +88,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:Doctor')->group(function () {
         Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
     });
+    Route::post('/appointments/quick-patient', [AppointmentController::class, 'quickPatient'])
+    ->name('appointments.quick-patient');
 
     // Payments - nested under a patient; Receptionist records
     // payments/installments but never deletes history.
@@ -128,4 +131,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:Doctor')->group(function () {
         Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
     });
+
+    // Tooth Chart
+    Route::get('/patients/{patient}/tooth-chart', [ToothChartController::class, 'show'])->name('patients.tooth-chart');
+    Route::post('/patients/{patient}/tooth-chart', [ToothChartController::class, 'update'])->name('patients.tooth-chart.update');
+    Route::delete('/patients/{patient}/tooth-chart/{tooth_number}', [ToothChartController::class, 'destroy'])->name('patients.tooth-chart.destroy');
 });

@@ -33,11 +33,17 @@ return new class extends Migration
 
             $table->index(['doctor_id', 'appointment_date']);
             $table->index(['room_id', 'appointment_date']);
+            $table->index('appointment_date');
+            $table->index(['appointment_date', 'start_time', 'end_time', 'status'], 'idx_appointment_conflict');
         });
     }
 
     public function down(): void
     {
         Schema::dropIfExists('appointments');
+        Schema::table('appointments', function (Blueprint $table) {
+            $table->dropIndex(['appointment_date']);
+            $table->dropIndex('idx_appointment_conflict');
+        });
     }
 };

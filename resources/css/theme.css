@@ -48,6 +48,27 @@
 
 body {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  line-height: 1.55;
+}
+
+.btn,
+.form-control,
+.form-select,
+.input-group-text,
+.card,
+.table {
+  transition: all 0.2s ease-in-out;
+}
+
+.btn:hover,
+.form-control:focus,
+.form-select:focus {
+  box-shadow: 0 0 0 0.2rem rgba(47, 111, 237, 0.15);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--zedan-primary);
 }
 
 [lang="ar"] body {
@@ -167,4 +188,7 @@ body {
   padding: 3rem 1rem;
   text-align: center;
   color: var(--bs-secondary-color);
+  border: 1px dashed var(--bs-border-color);
+  border-radius: var(--zedan-radius);
+  background: rgba(47, 111, 237, 0.03);
 }

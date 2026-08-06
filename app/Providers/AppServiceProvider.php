@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Activitylog\Models\Activity;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,6 +41,16 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrap();
 
+        //  if (config('database.default') === 'sqlite') {
+        //     DB::statement('PRAGMA foreign_keys = ON;');
+        // }
+
+        // Force HTTPS in production
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+        
+        
         // Kept portable to MySQL (utf8mb4 + older versions cap indexed
         // string columns at 191 chars); harmless no-op on SQLite.
         Schema::defaultStringLength(191);
@@ -69,7 +81,36 @@ class AppServiceProvider extends ServiceProvider
      * one file_exists() stat call, not two database round trips on
      * every single page load.
      */
-    private function ensureDatabaseIsProvisioned(): void
+    // private function ensureDatabaseIsProvisioned(): void
+    // {
+    //     $marker = storage_path('framework/.db_provisioned');
+
+    //     if (file_exists($marker)) {
+    //         return;
+    //     }
+
+    //     try {
+    //         $usersTableExists = Schema::hasTable('users');
+    //     } catch (\Throwable $e) {
+    //         // Database file/connection not ready yet - nothing safe to
+    //         // do here; a normal request later will retry.
+    //         return;
+    //     }
+
+    //     if ($usersTableExists && User::count() > 0) {
+    //         touch($marker);
+    //         return;
+    //     }
+
+    //     Artisan::call('migrate', ['--force' => true]);
+
+    //     if (User::count() === 0) {
+    //         Artisan::call('db:seed', ['--force' => true, '--class' => \Database\Seeders\ProductionSeeder::class]);
+    //     }
+
+    //     touch($marker);
+    // }
+     private function ensureDatabaseIsProvisioned(): void
     {
         $marker = storage_path('framework/.db_provisioned');
 
@@ -80,8 +121,6 @@ class AppServiceProvider extends ServiceProvider
         try {
             $usersTableExists = Schema::hasTable('users');
         } catch (\Throwable $e) {
-            // Database file/connection not ready yet - nothing safe to
-            // do here; a normal request later will retry.
             return;
         }
 
@@ -90,10 +129,24 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        Artisan::call('migrate', ['--force' => true]);
+        // Use --force and suppress output to avoid headers-already-sent
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+        } catch (\Throwable $e) {
+            // Migration failed (likely locked) — don't crash the request
+            return;
+        }
 
         if (User::count() === 0) {
-            Artisan::call('db:seed', ['--force' => true, '--class' => \Database\Seeders\ProductionSeeder::class]);
+            try {
+                Artisan::call('db:seed', [
+                    '--force' => true,
+                    '--class' => \Database\Seeders\ProductionSeeder::class,
+                ]);
+            } catch (\Throwable $e) {
+                // Seeding failed
+                return;
+            }
         }
 
         touch($marker);

@@ -52,6 +52,20 @@
 
     <div class="card zedan-card shadow-sm">
         <div class="card-body p-0 shadow-sm">
+            @php
+                $renderActivityValue = function ($value) {
+                    if ($value instanceof \DateTimeInterface) {
+                        return $value->format('Y-m-d H:i:s');
+                    }
+
+                    if (is_array($value) || is_object($value)) {
+                        $json = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                        return $json !== false ? $json : '[]';
+                    }
+
+                    return (string) $value;
+                };
+            @endphp
             @if($activities->isEmpty())
                 <x-empty-state />
             @else
@@ -99,8 +113,8 @@
                                                         @foreach($attributes as $field => $newValue)
                                                             <tr>
                                                                 <td>{{ $field }}</td>
-                                                                <td class="text-secondary">{{ data_get($old, $field, '-') }}</td>
-                                                                <td>{{ $newValue }}</td>
+                                                                <td class="text-secondary">{{ $renderActivityValue(data_get($old, $field, '-')) }}</td>
+                                                                <td>{{ $renderActivityValue($newValue) }}</td>
                                                             </tr>
                                                         @endforeach
                                                     </tbody>

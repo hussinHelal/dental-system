@@ -6,6 +6,7 @@ use App\Models\Backup;
 use App\Models\Doctor;
 use App\Models\InventoryItem;
 use App\Models\Payment;
+use App\Models\Appointment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -15,38 +16,48 @@ class DashboardController extends Controller
     {
         $today = Carbon::today()->toDateString();
 
-        $todaysAppointments = \App\Models\Appointment::forDate($today)
-            ->whereNotIn('status', ['cancelled'])
+        $todaysAppointments = Appointment::forDate($today)
+            ->whereNotIn('status', [Appointment::STATUS_CANCELLED, Appointment::STATUS_NO_SHOW])
             ->with(['patient', 'doctor', 'room'])
             ->orderBy('start_time')
+            ->limit(50)
             ->get();
 
-        $lowStockItems = InventoryItem::lowStock()->get();
+        $lowStockItems      = InventoryItem::lowStock()->get();
         $activeDoctorsCount = Doctor::active()->count();
 
         $financials = null;
         if ($request->user()->isDoctor()) {
-            $todaysRevenue = Payment::whereDate('payment_date', $today)->sum('amount_paid');
-            $pendingPayments = Payment::whereIn('status', ['pending', 'overdue'])->sum('remaining_balance');
-            $installmentTotals = Payment::where('status', 'installment')->sum('remaining_balance');
+            $todaysRevenue   = Payment::whereDate('payment_date', $today)->sum('amount_paid');
+            $pendingPayments = Payment::whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_OVERDUE])->sum('remaining_balance');
+            $installmentTotals = Payment::where('status', Payment::STATUS_INSTALLMENT)->sum('remaining_balance');
 
             $financials = [
-                'todays_revenue' => $todaysRevenue,
-                'pending_payments' => $pendingPayments,
-                'installment_totals' => $installmentTotals,
+                'todays_revenue'    => $todaysRevenue,
+                'pending_payments'  => $pendingPayments,
+                'installment_totals'=> $installmentTotals,
             ];
         }
 
-        $lastBackup = Backup::latest('generated_at')->first();
+        /* BUG FIX: eager-load generator to prevent N+1 */
+        $lastBackup = Backup::with('generator')->latest('generated_at')->first();
 
-        // Small weekly revenue sparkline (last 7 days), Doctor dashboard only.
+        /* OPTIMIZATION: single GROUP BY query instead of 7 separate sum() queries */
         $weeklyRevenue = [];
         if ($request->user()->isDoctor()) {
+            $start = Carbon::today()->subDays(6)->startOfDay();
+            $end   = Carbon::today()->endOfDay();
+
+            $rows = Payment::whereBetween('payment_date', [$start, $end])
+                ->selectRaw('DATE(payment_date) as date, SUM(amount_paid) as amount')
+                ->groupByRaw('DATE(payment_date)')
+                ->pluck('amount', 'date');
+
             for ($i = 6; $i >= 0; $i--) {
                 $date = Carbon::today()->subDays($i);
                 $weeklyRevenue[] = [
-                    'label' => $date->format('D'),
-                    'amount' => (float) Payment::whereDate('payment_date', $date)->sum('amount_paid'),
+                    'label'  => $date->format('D'),
+                    'amount' => (float) ($rows[$date->toDateString()] ?? 0),
                 ];
             }
         }

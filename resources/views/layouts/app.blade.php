@@ -25,6 +25,9 @@
 
     @vite(['resources/js/app.js'])
 </head>
+
+@stack('styles')    
+@stack('scripts')
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark zedan-navbar sticky-top">
         <div class="container-fluid">

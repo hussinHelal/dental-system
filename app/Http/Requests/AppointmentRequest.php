@@ -23,7 +23,7 @@ class AppointmentRequest extends FormRequest
             'treatment_id' => ['nullable', 'exists:treatments,id'],
             'session_number' => ['nullable', 'integer', 'min:1', 'max:50'],
             'visit_type' => ['required', Rule::in(['initial_consultation', 'follow_up'])],
-            'appointment_date' => ['required', 'date'],
+            'appointment_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
             'status' => ['sometimes', Rule::in([

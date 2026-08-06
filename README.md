@@ -1,5 +1,5 @@
 # Zedan — Dental Clinic Management System
-
+.db_provisioned
 A local, single-clinic dental practice management system built on Laravel 12:
 doctors, rooms, patients, appointments (with double-booking prevention),
 a treatment catalog (including multi-session courses like Root Canal), cash
@@ -483,4 +483,4 @@ If something doesn't run cleanly, the fix is almost always local and small
 — the architecture (schema, policies, routes, business logic) is the part
 most worth trusting; the last few percent of polish is what a real local
 run would surface.
-"dental-system" 
+"dental-system"

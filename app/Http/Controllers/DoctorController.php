@@ -19,7 +19,8 @@ class DoctorController extends Controller
 
         $doctors = Doctor::search($request->query('q'))
             ->orderBy('name')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
         return view('doctors.index', compact('doctors'));
     }

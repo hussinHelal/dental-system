@@ -2,7 +2,7 @@
 
 <?php $__env->startSection('content'); ?>
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm p-2">
         <h3 class="mb-0"><?php echo e(__('messages.patients')); ?></h3>
         <div class="d-flex gap-2 flex-grow-1 justify-content-end">
             <?php if (isset($component)) { $__componentOriginal61542037d001e2034791c9aff5866543 = $component; } ?>

@@ -21,14 +21,14 @@ class UserManagementController extends Controller
         $staff = User::role(User::ROLE_RECEPTIONIST)
             ->when($request->query('q'), fn ($q, $term) => $q->where(function ($qq) use ($term) {
                 $qq->where('name', 'like', "%{$term}%")
-                    ->orWhere('username', 'like', "%{$term}%");
+                   ->orWhere('username', 'like', "%{$term}%");
             }))
             ->orderBy('name')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
         return view('users.index', compact('staff'));
     }
-
     public function create()
     {
         $this->authorize('create', User::class);

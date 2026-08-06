@@ -7,7 +7,7 @@ use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\Auth;
 class ProfileController extends Controller
 {
     use HandlesImageUploads;
@@ -17,6 +17,28 @@ class ProfileController extends Controller
         return view('profile.edit', ['user' => $request->user()]);
     }
 
+    // public function update(ProfileUpdateRequest $request)
+    // {
+    //     $user = $request->user();
+    //     $data = $request->validated();
+
+    //     $user->name = $data['name'];
+
+    //     if (! empty($data['password'])) {
+    //         $user->password = Hash::make($data['password']);
+    //     }
+
+    //     if ($request->hasFile('photo')) {
+    //         if ($user->avatar) {
+    //             Storage::disk('public')->delete($user->avatar);
+    //         }
+    //         $user->avatar = $this->storeResizedImage($request->file('photo'), 'avatars');
+    //     }
+
+    //     $user->save();
+
+    //     return back()->with('success', __('messages.profile_updated'));
+    // }
     public function update(ProfileUpdateRequest $request)
     {
         $user = $request->user();
@@ -24,18 +46,24 @@ class ProfileController extends Controller
 
         $user->name = $data['name'];
 
+        $passwordChanged = false;
         if (! empty($data['password'])) {
             $user->password = Hash::make($data['password']);
+            $passwordChanged = true;
         }
 
         if ($request->hasFile('photo')) {
-            if ($user->avatar) {
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
             $user->avatar = $this->storeResizedImage($request->file('photo'), 'avatars');
         }
 
         $user->save();
+
+        if ($passwordChanged) {
+            Auth::logoutOtherDevices($data['password']);
+        }
 
         return back()->with('success', __('messages.profile_updated'));
     }

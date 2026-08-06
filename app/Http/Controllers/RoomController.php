@@ -11,11 +11,14 @@ class RoomController extends Controller
 {
     use RespondsToModals;
 
-    public function index(Request $request)
+   public function index(Request $request)
     {
         $this->authorize('viewAny', Room::class);
 
-        $rooms = Room::search($request->query('q'))->orderBy('name')->get();
+        $rooms = Room::search($request->query('q'))
+            ->orderBy('name')
+            ->paginate(20)
+            ->withQueryString();
 
         return view('rooms.index', compact('rooms'));
     }

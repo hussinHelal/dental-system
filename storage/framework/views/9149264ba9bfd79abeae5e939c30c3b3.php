@@ -23,6 +23,9 @@
 
     <?php echo app('Illuminate\Foundation\Vite')(['resources/js/app.js']); ?>
 </head>
+
+<?php echo $__env->yieldPushContent('styles'); ?>    
+<?php echo $__env->yieldPushContent('scripts'); ?>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark zedan-navbar sticky-top">
         <div class="container-fluid">

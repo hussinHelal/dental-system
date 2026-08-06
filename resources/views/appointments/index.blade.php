@@ -18,6 +18,9 @@
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAppointmentModal">
                     <i class="bi bi-plus-lg"></i> {{ __('messages.book_appointment') }}
                 </button>
+                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#quickPatientModal">
+                    <i class="bi bi-person-plus"></i> {{ __('messages.new_patient') }}
+                </button>
             @endcan
         </div>
     </div>
@@ -134,10 +137,25 @@
             <form data-ajax-form method="POST" action="{{ route('appointments.store') }}">
                 @csrf
                 <div class="row">
-                    <div class="col-md-6">
+                    {{-- <div class="col-md-6">
                         <x-form-select name="patient_id" :label="__('messages.patient')" required :placeholder="__('messages.select_patient')"
                             :options="\App\Models\Patient::orderBy('full_name')->pluck('full_name', 'id')"
                             :value="$bookFor" />
+                    </div> --}}
+                    <!-- In the create appointment modal, replace the patient_id select -->
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">{{ __('messages.patient') }}</label>
+                        <div class="input-group">
+                            <select name="patient_id" class="form-select" id="appointmentPatientSelect" required>
+                                <option value="">{{ __('messages.select_patient') }}</option>
+                                @foreach($patients as $id => $name)
+                                    <option value="{{ $id }}" @selected($bookFor == $id)>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickPatientModal">
+                                <i class="bi bi-plus-lg"></i> {{ __('messages.new') }}
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <x-form-select name="visit_type" :label="__('messages.visit_type')" required
@@ -189,6 +207,80 @@
         });
     </script>
     @endif
+@endpush
+
+<!-- Quick Add Patient Modal -->
+<x-modal id="quickPatientModal" title="{{ __('messages.quick_add_patient') }}">
+    <form id="quickPatientForm" method="POST" data-ajax-form action="{{ route('appointments.quick-patient') }}">
+        @csrf
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ __('messages.full_name') }} *</label>
+                <input type="text" name="full_name" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ __('messages.phone') }} *</label>
+                <input type="text" name="phone" class="form-control" required>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ __('messages.date_of_birth') }}</label>
+                <input type="date" name="date_of_birth" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ __('messages.age') }}</label>
+                <input type="number" name="age" class="form-control" min="0" max="130">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ __('messages.gender') }}</label>
+                <select name="gender" class="form-select">
+                    <option value="">{{ __('messages.select') }}</option>
+                    <option value="male">{{ __('messages.male') }}</option>
+                    <option value="female">{{ __('messages.female') }}</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ __('messages.address') }}</label>
+                <input type="text" name="address" class="form-control">
+            </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
+            <button type="submit" class="btn btn-primary">{{ __('messages.create_patient') }}</button>
+        </div>
+    </form>
+</x-modal>
+
+<!-- rely on the global `data-ajax-form` handler in resources/js/app.js -->
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modalEl = document.getElementById('createAppointmentModal');
+    if (!modalEl) return;
+
+    // Ensure any stray backdrop is removed when the modal is hidden
+    modalEl.addEventListener('hidden.bs.modal', function () {
+        // Remove any leftover backdrop elements
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        // Ensure body class removed
+        document.body.classList.remove('modal-open');
+    });
+
+    // Also guard against the rare case where multiple backdrops exist when hiding
+    modalEl.addEventListener('hide.bs.modal', function () {
+        setTimeout(() => {
+            if (!document.querySelector('.modal.show')) {
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                document.body.classList.remove('modal-open');
+            }
+        }, 100);
+    });
+});
+</script>
 @endpush
 
 @endsection

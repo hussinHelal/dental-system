@@ -35,6 +35,15 @@ class ActivityLogController extends Controller
             ->paginate(30)
             ->withQueryString();
 
+        // Normalize activity properties to arrays if stored as JSON string
+        $activities->getCollection()->transform(function($activity) {
+            if (is_string($activity->properties)) {
+                $decoded = json_decode($activity->properties, true);
+                $activity->properties = $decoded ?? [];
+            }
+            return $activity;
+        });
+
         // Staff list for the "who" filter dropdown - small table, cheap
         // to load in full regardless of clinic size.
         $staff = User::orderBy('name')->get(['id', 'name']);

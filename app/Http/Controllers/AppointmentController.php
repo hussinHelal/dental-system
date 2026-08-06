@@ -6,8 +6,9 @@ use App\Http\Controllers\Concerns\RespondsToModals;
 use App\Http\Requests\AppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Doctor;
-use App\Models\Room;
 use App\Models\Patient;
+use App\Models\Room;
+use App\Models\Treatment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,38 +18,33 @@ class AppointmentController extends Controller
 {
     use RespondsToModals;
 
-    /**
-     * Day-view timeline: opening to closing hours for one date,
-     * filterable by doctor/room, with prev/next/jump-to-date nav.
-     */
-    public function index(Request $request)
-    {
-        $this->authorize('viewAny', Appointment::class);
+   public function index(Request $request)
+{
+    $this->authorize('viewAny', Appointment::class);
 
-        $date = $request->query('date')
-            ? Carbon::parse($request->query('date'))->toDateString()
-            : Carbon::today()->toDateString();
+    $date = $request->query('date')
+        ? Carbon::parse($request->query('date'))->toDateString()
+        : Carbon::today()->toDateString();
 
-        $bookFor = $request->query('book_for');
+    $bookFor = $request->query('book_for');
 
-        $appointments = Appointment::forDate($date)
-            ->when($request->query('doctor_id'), fn ($q, $v) => $q->where('doctor_id', $v))
-            ->when($request->query('room_id'), fn ($q, $v) => $q->where('room_id', $v))
-            ->with(['patient', 'doctor', 'room', 'treatment'])
-            ->orderBy('start_time')
-            ->get();
+    $appointments = Appointment::forDate($date)
+        ->when($request->query('doctor_id'), fn ($q, $v) => $q->where('doctor_id', $v))
+        ->when($request->query('room_id'), fn ($q, $v) => $q->where('room_id', $v))
+        ->with(['patient', 'doctor', 'room', 'treatment'])
+        ->orderBy('start_time')
+        ->get();
 
-        $doctors = Doctor::active()->orderBy('name')->get();
-        $rooms = Room::active()->orderBy('name')->get();
-        $patients = Patient::orderBy('full_name')->pluck('full_name', 'id');
+    $doctors = Doctor::active()->orderBy('name')->get();
+    $rooms = Room::active()->orderBy('name')->get();
+    $patients = Patient::orderBy('full_name')->pluck('full_name', 'id');
+    $treatments = Treatment::active()->orderBy('name')->get();
 
-        return view('appointments.index', compact('appointments', 'date', 'doctors', 'rooms', 'bookFor','patients'));
-    }
+    return view('appointments.index', compact(
+        'appointments', 'date', 'doctors', 'rooms', 'bookFor', 'patients', 'treatments'
+    ));
+}
 
-    /**
-     * Cross-field search across patient name/phone, doctor, room,
-     * date range, visit type, and status.
-     */
     public function search(Request $request)
     {
         $this->authorize('viewAny', Appointment::class);
@@ -56,9 +52,8 @@ class AppointmentController extends Controller
         $appointments = Appointment::query()
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = trim($request->query('q'));
-
                 $q->whereHas('patient', fn ($p) => $p->where('full_name', 'like', "%{$term}%")
-                        ->orWhere('phone', 'like', "%{$term}%"));
+                    ->orWhere('phone', 'like', "%{$term}%"));
             })
             ->when($request->filled('doctor_id'), fn ($q, $v) => $q->where('doctor_id', $v))
             ->when($request->filled('room_id'), fn ($q, $v) => $q->where('room_id', $v))
@@ -72,7 +67,7 @@ class AppointmentController extends Controller
             ->withQueryString();
 
         $doctors = Doctor::active()->orderBy('name')->get();
-        $rooms = Room::active()->orderBy('name')->get();
+        $rooms   = Room::active()->orderBy('name')->get();
 
         return view('appointments.search', compact('appointments', 'doctors', 'rooms'));
     }
@@ -81,8 +76,8 @@ class AppointmentController extends Controller
     {
         $request->validate([
             'appointment_date' => ['required', 'date'],
-            'doctor_id' => ['nullable', 'exists:doctors,id'],
-            'room_id' => ['nullable', 'exists:rooms,id'],
+            'doctor_id'        => ['nullable', 'exists:doctors,id'],
+            'room_id'          => ['nullable', 'exists:rooms,id'],
         ]);
 
         $query = Appointment::query()
@@ -92,7 +87,6 @@ class AppointmentController extends Controller
         if ($request->filled('doctor_id')) {
             $query->where('doctor_id', $request->query('doctor_id'));
         }
-
         if ($request->filled('room_id')) {
             $query->where('room_id', $request->query('room_id'));
         }
@@ -105,9 +99,7 @@ class AppointmentController extends Controller
     public function show(Appointment $appointment)
     {
         $this->authorize('view', $appointment);
-
         $appointment->load(['patient', 'doctor', 'room', 'treatment']);
-
         return view('appointments.show', compact('appointment'));
     }
 
@@ -121,7 +113,6 @@ class AppointmentController extends Controller
 
         $appointment = DB::transaction(function () use ($data) {
             $this->abortIfConflicting($data);
-
             return Appointment::create($data);
         });
 
@@ -141,7 +132,6 @@ class AppointmentController extends Controller
 
         DB::transaction(function () use ($data, $appointment) {
             $this->abortIfConflicting($data, ignoreId: $appointment->id);
-
             $appointment->update($data);
         });
 
@@ -156,20 +146,12 @@ class AppointmentController extends Controller
     public function destroy(Request $request, Appointment $appointment)
     {
         $this->authorize('delete', $appointment);
-
         $date = $appointment->appointment_date->toDateString();
         $appointment->delete();
 
         return $this->respondSuccess($request, __('messages.appointment_deleted'), 'appointments.index', ['date' => $date]);
     }
 
-    /**
-     * The FormRequest already caught the common case with a friendly
-     * per-field error before this ever runs. This is the same check
-     * re-run inside the caller's transaction, with a row lock, as the
-     * actual atomicity guarantee against a genuine concurrent race -
-     * two requests passing the unlocked pre-check in the same instant.
-     */
     private function abortIfConflicting(array $data, ?int $ignoreId = null): void
     {
         $conflict = Appointment::findConflict(
@@ -186,12 +168,40 @@ class AppointmentController extends Controller
             throw ValidationException::withMessages([
                 'appointment_date' => __('messages.appointment_conflict', [
                     'patient' => $conflict->patient->full_name,
-                    'doctor' => $conflict->doctor->name,
-                    'room' => $conflict->room->name,
-                    'start' => $conflict->start_time,
-                    'end' => $conflict->end_time,
+                    'doctor'  => $conflict->doctor->name,
+                    'room'    => $conflict->room->name,
+                    'start'   => $conflict->start_time,
+                    'end'     => $conflict->end_time,
                 ]),
             ]);
         }
+    }
+
+    public function quickPatient(Request $request)
+    {
+    $this->authorize('create', Patient::class);
+
+    $validated = $request->validate([
+        'full_name' => ['required', 'string', 'max:150'],
+        'phone' => ['required', 'string', 'max:30', 'regex:/^[0-9+\-\s]{7,30}$/', 'unique:patients,phone'],
+        'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+        'age' => ['nullable', 'integer', 'min:0', 'max:130'],
+        'gender' => ['nullable', 'in:male,female'],
+        'address' => ['nullable', 'string'],
+    ]);
+
+    $validated['created_by'] = $request->user()->id;
+
+    $patient = Patient::create($validated);
+
+    return response()->json([
+        'success' => true,
+        'patient' => [
+            'id' => $patient->id,
+            'full_name' => $patient->full_name,
+            'phone' => $patient->phone,
+        ],
+        'message' => __('messages.patient_created'),
+    ]);
     }
 }
