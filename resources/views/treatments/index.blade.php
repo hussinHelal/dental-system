@@ -35,6 +35,7 @@
                             <tr>
                                 <th>{{ __('messages.name') }}</th>
                                 <th>{{ __('messages.category') }}</th>
+                                <th>{{ __('messages.description') }}</th>
                                 <th>{{ __('messages.default_cost') }}</th>
                                 <th>{{ __('messages.multi_session') }}</th>
                                 <th></th>
@@ -47,6 +48,7 @@
                                         <a href="{{ route('treatments.show', $treatment) }}">{{ $treatment->name }}</a>
                                     </td>
                                     <td data-label="{{ __('messages.category') }}">{{ $treatment->category }}</td>
+                                    <td data-label="{{ __('messages.description') }}">{{ $treatment->description }}</td>
                                     <td data-label="{{ __('messages.default_cost') }}">{{ number_format($treatment->default_cost, 2) }}</td>
                                     <td data-label="{{ __('messages.multi_session') }}">
                                         @if($treatment->is_multi_session)

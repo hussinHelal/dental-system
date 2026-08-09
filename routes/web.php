@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
 
     // Patients - first-class module; Receptionist creates/edits but
     // never deletes.
+    Route::get('/patients/search', [PatientController::class, 'search'])->name('patients.search');
     Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
     Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
     Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
@@ -77,6 +78,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:Doctor')->group(function () {
         Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
     });
+    Route::resource('patients', PatientController::class);
 
     // Appointments - daily schedule + full cross-field search.
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');

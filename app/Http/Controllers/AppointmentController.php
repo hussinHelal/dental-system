@@ -39,9 +39,10 @@ class AppointmentController extends Controller
     $rooms = Room::active()->orderBy('name')->get();
     $patients = Patient::orderBy('full_name')->pluck('full_name', 'id');
     $treatments = Treatment::active()->orderBy('name')->get();
+    $bookForName = $bookFor ? Patient::find($bookFor)?->full_name : null;
 
     return view('appointments.index', compact(
-        'appointments', 'date', 'doctors', 'rooms', 'bookFor', 'patients', 'treatments'
+        'appointments', 'date', 'doctors', 'rooms', 'bookFor', 'patients', 'treatments', 'bookForName'
     ));
 }
 
@@ -68,6 +69,7 @@ class AppointmentController extends Controller
 
         $doctors = Doctor::active()->orderBy('name')->get();
         $rooms   = Room::active()->orderBy('name')->get();
+        
 
         return view('appointments.search', compact('appointments', 'doctors', 'rooms'));
     }
@@ -202,6 +204,7 @@ class AppointmentController extends Controller
             'phone' => $patient->phone,
         ],
         'message' => __('messages.patient_created'),
+        'redirect' => route('appointments.index', ['book_for' => $patient->id]),
     ]);
     }
 }

@@ -404,5 +404,12 @@ return [
     'view'               => 'عرض',
     'crown_color'     => 'لون التاج',
     'no_crown_color'  => 'لم يتم تسجيل لون التاج.',
+
+    'no_results' => 'لا توجد نتائج.',
+    'select_patient_from_list' => 'الرجاء اختيار مريض من نتائج البحث.',
+    'treatment' => 'العلاج',
+    'description' => 'الوصف',
+    'photo_replace_hint' => 'اتركه فارغًا للاحتفاظ بالصورة الحالية.',
+    
 ];
 

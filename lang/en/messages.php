@@ -397,4 +397,10 @@ return [
     'download'           => 'Download',
     'close'              => 'Close',
     'view'               => 'View',
+
+    'no_results' => 'No results found.',
+    'select_patient_from_list' => 'Please select a patient from the search results.',
+    'treatment' => 'Treatment',
+    'description' => 'Description',
+    'photo_replace_hint' => 'Leave empty to keep the current photo.',
 ];

@@ -24,6 +24,7 @@
                     <table class="table zedan-responsive-table mb-0 align-middle">
                         <thead>
                             <tr>
+                                <th>{{ __('messages.photo') }}</th>
                                 <th>{{ __('messages.name') }}</th>
                                 <th>{{ __('messages.category') }}</th>
                                 <th>{{ __('messages.quantity') }}</th>
@@ -34,6 +35,14 @@
                         <tbody>
                             @foreach($items as $item)
                                 <tr>
+                                    <td data-label="{{ __('messages.photo') }}">
+                                        <img src="{{ $item->photoUrl() }}"
+                                             alt="{{ $item->name }}"
+                                             data-image-preview
+                                             data-image-title="{{ $item->name }}"
+                                             class="rounded border"
+                                             style="width: 48px; height: 48px; object-fit: cover; cursor: pointer;">
+                                    </td>
                                     <td data-label="{{ __('messages.name') }}">
                                         {{ $item->name }}
                                         @if($item->isLowStock())
@@ -72,7 +81,16 @@
                                             <x-form-input type="number" name="low_stock_threshold" :label="__('messages.low_stock_threshold')" :value="$item->low_stock_threshold" required />
                                             <div class="mb-3">
                                                 <label class="form-label">{{ __('messages.photo') }}</label>
+                                                <div class="mb-2">
+                                                    <img src="{{ $item->photoUrl() }}"
+                                                         alt="{{ $item->name }}"
+                                                         data-image-preview
+                                                         data-image-title="{{ $item->name }}"
+                                                         class="rounded border"
+                                                         style="width: 64px; height: 64px; object-fit: cover; cursor: pointer;">
+                                                </div>
                                                 <input type="file" name="photo" class="form-control" accept="image/*">
+                                                <div class="form-text">{{ __('messages.photo_replace_hint') }}</div>
                                             </div>
                                             <button type="submit" class="btn btn-primary w-100">{{ __('messages.save') }}</button>
                                         </form>

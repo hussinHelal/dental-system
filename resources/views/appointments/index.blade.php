@@ -137,25 +137,20 @@
             <form data-ajax-form method="POST" action="{{ route('appointments.store') }}">
                 @csrf
                 <div class="row">
-                    {{-- <div class="col-md-6">
-                        <x-form-select name="patient_id" :label="__('messages.patient')" required :placeholder="__('messages.select_patient')"
-                            :options="\App\Models\Patient::orderBy('full_name')->pluck('full_name', 'id')"
-                            :value="$bookFor" />
-                    </div> --}}
-                    <!-- In the create appointment modal, replace the patient_id select -->
-                    <div class="mb-3 col-md-6">
+                    <div class="mb-3 col-md-6 position-relative">
                         <label class="form-label">{{ __('messages.patient') }}</label>
-                        <div class="input-group">
-                            <select name="patient_id" class="form-select" id="appointmentPatientSelect" required>
-                                <option value="">{{ __('messages.select_patient') }}</option>
-                                @foreach($patients as $id => $name)
-                                    <option value="{{ $id }}" @selected($bookFor == $id)>{{ $name }}</option>
-                                @endforeach
-                            </select>
-                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickPatientModal">
-                                <i class="bi bi-plus-lg"></i> {{ __('messages.new') }}
-                            </button>
-                        </div>
+                        <input type="text"
+                               id="appointmentPatientSearch"
+                               class="form-control"
+                               autocomplete="off"
+                               placeholder="{{ __('messages.select_patient') }}"
+                               value="{{ $bookForName ?? '' }}"
+                               required>
+                        <input type="hidden" name="patient_id" id="appointmentPatientId" value="{{ $bookFor }}">
+                        <div id="appointmentPatientResults"
+                             class="list-group position-absolute w-100 shadow-sm"
+                             style="z-index: 1060; max-height: 220px; overflow-y: auto; display: none;"></div>
+                        <div class="invalid-feedback">{{ __('messages.select_patient_from_list') }}</div>
                     </div>
                     <div class="col-md-6">
                         <x-form-select name="visit_type" :label="__('messages.visit_type')" required
@@ -195,7 +190,7 @@
         </x-modal>
     @endcan
 
-       @push('scripts')
+    @push('scripts')
     @if($bookFor)
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -207,9 +202,9 @@
         });
     </script>
     @endif
-@endpush
+    @endpush
 
-<!-- Quick Add Patient Modal -->
+<!-- Quick Add Patient Modal (only entry point: the "New Patient" header button) -->
 <x-modal id="quickPatientModal" title="{{ __('messages.quick_add_patient') }}">
     <form id="quickPatientForm" method="POST" data-ajax-form action="{{ route('appointments.quick-patient') }}">
         @csrf
@@ -264,13 +259,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Ensure any stray backdrop is removed when the modal is hidden
     modalEl.addEventListener('hidden.bs.modal', function () {
-        // Remove any leftover backdrop elements
         document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        // Ensure body class removed
         document.body.classList.remove('modal-open');
     });
 
-    // Also guard against the rare case where multiple backdrops exist when hiding
     modalEl.addEventListener('hide.bs.modal', function () {
         setTimeout(() => {
             if (!document.querySelector('.modal.show')) {
@@ -279,6 +271,107 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }, 100);
     });
+});
+</script>
+@endpush
+
+@push('scripts')
+<script>
+// Patient live search for the "Book Appointment" modal
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('appointmentPatientSearch');
+    const hiddenInput = document.getElementById('appointmentPatientId');
+    const resultsBox = document.getElementById('appointmentPatientResults');
+    if (!searchInput || !hiddenInput || !resultsBox) return;
+
+    let debounceTimer = null;
+    let lastQuery = '';
+
+    function closeResults() {
+        resultsBox.style.display = 'none';
+        resultsBox.innerHTML = '';
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, s => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[s]));
+    }
+
+    function renderResults(patients) {
+        if (!patients.length) {
+            resultsBox.innerHTML = `<div class="list-group-item text-secondary">{{ __('messages.no_results') }}</div>`;
+            resultsBox.style.display = 'block';
+            return;
+        }
+        resultsBox.innerHTML = patients.map(p => `
+            <button type="button" class="list-group-item list-group-item-action"
+                    data-id="${p.id}" data-name="${escapeHtml(p.full_name)}">
+                <div class="fw-semibold">${escapeHtml(p.full_name)}</div>
+                <div class="small text-secondary">${escapeHtml(p.phone ?? '')}</div>
+            </button>
+        `).join('');
+        resultsBox.style.display = 'block';
+    }
+
+    searchInput.addEventListener('input', function () {
+        hiddenInput.value = '';
+        searchInput.classList.remove('is-invalid');
+        const query = this.value.trim();
+        clearTimeout(debounceTimer);
+
+        if (query.length < 2) {
+            closeResults();
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            lastQuery = query;
+            fetch(`{{ route('patients.search') }}?q=${encodeURIComponent(query)}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error(`Search request failed with status ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    // Accept either a plain array or a Laravel API Resource / paginated
+                    // response shape like { data: [...] }.
+                    const patients = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
+                    if (query === lastQuery) renderResults(patients);
+                })
+                .catch(err => {
+                    console.error('Patient search failed:', err);
+                    closeResults();
+                });
+        }, 300);
+    });
+
+    resultsBox.addEventListener('click', function (e) {
+        const item = e.target.closest('button[data-id]');
+        if (!item) return;
+        searchInput.value = item.dataset.name;
+        hiddenInput.value = item.dataset.id;
+        closeResults();
+    });
+
+    document.addEventListener('click', function (e) {
+        if (e.target !== searchInput && !resultsBox.contains(e.target)) {
+            closeResults();
+        }
+    });
+
+    const appointmentForm = searchInput.closest('form');
+    if (appointmentForm) {
+        appointmentForm.addEventListener('submit', function (e) {
+            if (!hiddenInput.value) {
+                e.preventDefault();
+                e.stopPropagation();
+                searchInput.classList.add('is-invalid');
+                searchInput.focus();
+            }
+        });
+    }
 });
 </script>
 @endpush
