@@ -28,7 +28,7 @@
 
 @stack('styles')    
 @stack('scripts')
-<body>
+<body >
     <nav class="navbar navbar-expand-lg navbar-dark zedan-navbar sticky-top">
         <div class="container-fluid">
             <button class="btn btn-link text-white d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#zedanSidebar">

@@ -24,7 +24,6 @@ class PatientPolicy
 
        public function update(User $user, Patient $patient): bool
     {
-        /* BUG FIX: allow editing if created_by is null (legacy/seeded data) */
         return $user->isDoctor()
             || $patient->created_by === null
             || $user->id === $patient->created_by;

@@ -21,7 +21,7 @@ $toothStatusColors = [
 ];
 @endphp
     <a href="{{ route('patients.index') }}" class="btn btn-sm btn-primary mb-2 shadow-sm">
-        <i class="bi bi-arrow-{{ app()->getLocale() === 'ar' ? 'end' : 'start' }} icon-mirror-rtl me-1"></i>
+        <i class="bi bi-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} me-1"></i>
         {{ __('messages.back') }}
     </a>
 
@@ -78,6 +78,92 @@ $toothStatusColors = [
         </div>
     </div>
 
+    
+    <div class="card zedan-card mb-4">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-credit-card me-2"></i>{{ __('messages.payments') }}</span>
+            @can('create', \App\Models\Payment::class)
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+                    <i class="bi bi-plus-lg"></i> {{ __('messages.record_payment') }}
+                </button>
+            @endcan
+        </div>
+        <div class="card-body shadow-sm">
+            <div class="row text-center mb-3 g-2">
+                <div class="col-4">
+                    <div class="text-secondary small">{{ __('messages.total_cost') }}</div>
+                    <div class="fw-bold">{{ number_format($summary['total_cost'], 2) }}</div>
+                </div>
+                <div class="col-4">
+                    <div class="text-secondary small">{{ __('messages.paid') }}</div>
+                    <div class="fw-bold text-success">{{ number_format($summary['paid'], 2) }}</div>
+                </div>
+                <div class="col-4">
+                    <div class="text-secondary small">{{ __('messages.remaining') }}</div>
+                    <div class="fw-bold text-danger">{{ number_format($summary['remaining'], 2) }}</div>
+                </div>
+            </div>
+
+            @if($payments->isEmpty())
+                <x-empty-state />
+            @else
+                @foreach($payments as $payment)
+                    <div class="border rounded p-2 mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">{{ $payment->treatment->name }}</div>
+                                <div class="small text-secondary">
+                                    {{ __('messages.total') }}: {{ number_format($payment->total_amount, 2) }}
+                                    &middot; {{ __('messages.remaining') }}: {{ number_format($payment->remaining_balance, 2) }}
+                                </div>
+                            </div>
+                            <span class="badge text-bg-{{ $payment->statusBadgeClass() }}">
+                                {{ __('messages.payment_status_'.$payment->status) }}
+                            </span>
+                        </div>
+
+                        @if($payment->payment_type === 'installment')
+                            <div class="mt-2">
+                                @foreach($payment->installments as $installment)
+                                    <div class="small text-secondary">
+                                        {{ $installment->paid_date->toDateString() }} - {{ number_format($installment->amount, 2) }}
+                                    </div>
+                                @endforeach
+                                @can('update', $payment)
+                                    @if($payment->remaining_balance > 0)
+                                        <button class="btn btn-sm btn-outline-primary mt-1" data-bs-toggle="modal" data-bs-target="#addInstallmentModal{{ $payment->id }}">
+                                            {{ __('messages.add_installment') }}
+                                        </button>
+                                    @endif
+                                @endcan
+                            </div>
+                        @endif
+
+                        @can('delete', $payment)
+                            <form data-ajax-form method="POST" action="{{ route('payments.destroy', $payment) }}" class="mt-2" data-confirm="{{ __('messages.confirm_delete') }}">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> {{ __('messages.delete') }}</button>
+                            </form>
+                        @endcan
+                    </div>
+
+                    @if($payment->payment_type === 'installment')
+                        <x-modal :id="'addInstallmentModal'.$payment->id" :title="__('messages.add_installment')">
+                            <form data-ajax-form method="POST" action="{{ route('payments.installments.store', $payment) }}">
+                                @csrf
+                                <x-form-input type="number" step="0.01" name="amount" :label="__('messages.amount')" required />
+                                <x-form-input type="date" name="paid_date" :label="__('messages.date')" :value="now()->toDateString()" required />
+                                <button type="submit" class="btn btn-primary w-100">{{ __('messages.save') }}</button>
+                            </form>
+                        </x-modal>
+                    @endif
+                @endforeach
+                <div class="mt-2">{{ $payments->links() }}</div>
+            @endif
+        </div>
+    </div>
+
+    
     <div class="card shadow-sm mb-4">
     <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="bi bi-grid-3x3-gap"></i> {{ __('messages.tooth_chart') }}</h5>
@@ -103,23 +189,45 @@ $toothStatusColors = [
     </div>
 </div>
 
-            {{-- X-Ray Section --}}
-            @if($patient->xray_photo)
-            <div class="card zedan-card mb-4">
-                <div class="card-header bg-transparent">
-                    <i class="bi bi-x-ray me-2"></i>{{ __('messages.xray_photo') }}
-                </div>
-                <div class="card-body text-center">
-                    <a href="{{ $patient->xrayPhotoUrl() }}" target="_blank" class="d-inline-block position-relative">
-                        <img src="{{ $patient->xrayPhotoUrl() }}" class="img-fluid rounded shadow-sm xray-image" alt="{{ __('messages.xray_photo') }}" style="max-height: 400px;">
-                        <div class="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-50 rounded px-2 py-1 text-white small">
-                            <i class="bi bi-zoom-in"></i> {{ __('messages.click_to_enlarge') }}
-                        </div>
-                    </a>
-                </div>
-            </div>
-            @endif
+{{-- X-Ray Section --}}
+<div class="card zedan-card mb-4">
+    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-x-ray me-2"></i>{{ __('messages.xray_photo') }}</span>
+        @if($patient->xray_photo)
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#xrayViewModal">
+                <i class="bi bi-eye"></i> {{ __('messages.view') }}
+            </button>
+        @endif
+    </div>
+    <div class="card-body text-center">
+        @if($patient->xray_photo)
+            <img src="{{ $patient->xrayPhotoUrl() }}" class="img-fluid rounded shadow-sm xray-image mb-2" alt="{{ __('messages.xray_photo') }}" style="max-height: 250px; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#xrayViewModal">
+        @else
+            <p class="text-muted mb-0"><i class="bi bi-image fs-1"></i></p>
+            <p class="text-muted small mb-0">{{ __('messages.no_xray') ?? 'No X-ray uploaded.' }}</p>
+        @endif
+    </div>
+</div>
 
+{{-- Crown Color Section --}}
+<div class="card zedan-card mb-4">
+    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-palette me-2"></i>{{ __('messages.crown_color') }}</span>
+        @if($patient->crown_color)
+            <span class="badge bg-primary fs-6">{{ $patient->crown_color }}</span>
+        @endif
+    </div>
+    <div class="card-body text-center">
+        @if($patient->crown_color)
+            <div class="py-2">
+                <span class="display-5 fw-bold text-primary font-monospace">{{ $patient->crown_color }}</span>
+            </div>
+        @else
+            <p class="text-muted mb-0"><i class="bi bi-palette fs-1"></i></p>
+            <p class="text-muted small mb-0">{{ __('messages.no_crown_color') }}</p>
+        @endif
+    </div>
+</div>
             {{-- Appointments (PAGINATED) --}}
             <div class="card zedan-card mb-4">
                 <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
@@ -165,99 +273,10 @@ $toothStatusColors = [
                     @endif
                 </div>
             </div>
-        </div>
-
-        {{-- Right Column: Payments --}}
-        <div class="col-lg-5 shadow-sm">
-            <div class="card zedan-card mb-4">
-                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-credit-card me-2"></i>{{ __('messages.payments') }}</span>
-                    @can('create', \App\Models\Payment::class)
-                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
-                            <i class="bi bi-plus-lg"></i> {{ __('messages.record_payment') }}
-                        </button>
-                    @endcan
-                </div>
-                <div class="card-body shadow-sm">
-                    <div class="row text-center mb-3 g-2">
-                        <div class="col-4">
-                            <div class="text-secondary small">{{ __('messages.total_cost') }}</div>
-                            <div class="fw-bold">{{ number_format($summary['total_cost'], 2) }}</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="text-secondary small">{{ __('messages.paid') }}</div>
-                            <div class="fw-bold text-success">{{ number_format($summary['paid'], 2) }}</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="text-secondary small">{{ __('messages.remaining') }}</div>
-                            <div class="fw-bold text-danger">{{ number_format($summary['remaining'], 2) }}</div>
-                        </div>
-                    </div>
-
-                    @if($payments->isEmpty())
-                        <x-empty-state />
-                    @else
-                        @foreach($payments as $payment)
-                            <div class="border rounded p-2 mb-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="fw-semibold">{{ $payment->treatment->name }}</div>
-                                        <div class="small text-secondary">
-                                            {{ __('messages.total') }}: {{ number_format($payment->total_amount, 2) }}
-                                            &middot; {{ __('messages.remaining') }}: {{ number_format($payment->remaining_balance, 2) }}
-                                        </div>
-                                    </div>
-                                    <span class="badge text-bg-{{ $payment->statusBadgeClass() }}">
-                                        {{ __('messages.payment_status_'.$payment->status) }}
-                                    </span>
-                                </div>
-
-                                @if($payment->payment_type === 'installment')
-                                    <div class="mt-2">
-                                        @foreach($payment->installments as $installment)
-                                            <div class="small text-secondary">
-                                                {{ $installment->paid_date->toDateString() }} - {{ number_format($installment->amount, 2) }}
-                                            </div>
-                                        @endforeach
-                                        @can('update', $payment)
-                                            @if($payment->remaining_balance > 0)
-                                                <button class="btn btn-sm btn-outline-primary mt-1" data-bs-toggle="modal" data-bs-target="#addInstallmentModal{{ $payment->id }}">
-                                                    {{ __('messages.add_installment') }}
-                                                </button>
-                                            @endif
-                                        @endcan
-                                    </div>
-                                @endif
-
-                                @can('delete', $payment)
-                                    <form data-ajax-form method="POST" action="{{ route('payments.destroy', $payment) }}" class="mt-2" data-confirm="{{ __('messages.confirm_delete') }}">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> {{ __('messages.delete') }}</button>
-                                    </form>
-                                @endcan
-                            </div>
-
-                            @if($payment->payment_type === 'installment')
-                                <x-modal :id="'addInstallmentModal'.$payment->id" :title="__('messages.add_installment')">
-                                    <form data-ajax-form method="POST" action="{{ route('payments.installments.store', $payment) }}">
-                                        @csrf
-                                        <x-form-input type="number" step="0.01" name="amount" :label="__('messages.amount')" required />
-                                        <x-form-input type="date" name="paid_date" :label="__('messages.date')" :value="now()->toDateString()" required />
-                                        <button type="submit" class="btn btn-primary w-100">{{ __('messages.save') }}</button>
-                                    </form>
-                                </x-modal>
-                            @endif
-                        @endforeach
-                        <div class="mt-2">{{ $payments->links() }}</div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
 
     {{-- Edit Patient Modal (includes X-ray + Tooth Chart) --}}
     @can('update', $patient)
-        <x-modal id="editPatientModal" :title="__('messages.edit_patient')">
+        <x-modal id="editPatientModal" :title="__('messages.edit_patient')" :centered="true" :scrollable="true">
             <form data-ajax-form method="POST" action="{{ route('patients.update', $patient) }}" enctype="multipart/form-data">
                 @csrf @method('PUT')
                 <x-form-input name="full_name" :label="__('messages.full_name')" :value="$patient->full_name" required />
@@ -267,19 +286,26 @@ $toothStatusColors = [
                 <x-form-select name="gender" :label="__('messages.gender')" :value="$patient->gender" :options="['male' => __('messages.gender_male'), 'female' => __('messages.gender_female')]" :placeholder="__('messages.select_gender')" />
                 <x-form-textarea name="address" :label="__('messages.address')" :value="$patient->address" />
                 <x-form-textarea name="notes" :label="__('messages.notes')" :value="$patient->notes" />
+
+                {{-- Photo --}}
                 <div class="mb-3">
                     <label class="form-label">{{ __('messages.photo') }}</label>
                     <input type="file" name="photo" class="form-control" accept="image/*">
+                   
                 </div>
+
+                {{-- X-Ray --}}
                 <div class="mb-3">
                     <label class="form-label">{{ __('messages.xray_photo') }}</label>
                     <input type="file" name="xray_photo" class="form-control" accept="image/*">
-                    @if($patient->xray_photo)
-                        <div class="form-text text-warning">
-                            <i class="bi bi-exclamation-triangle me-1"></i>{{ __('messages.xray_replace_hint') }}
-                        </div>
-                    @endif
                 </div>
+
+                {{-- Crown Color --}}
+                <div class="mb-3">
+                    <label class="form-label">{{ __('messages.crown_color') }}</label>
+                    <input type="text" name="crown_color" class="form-control" value="{{ $patient->crown_color }}" placeholder="A2, B1, C3 ...">
+                </div>
+
                 <button type="submit" class="btn btn-primary w-100">{{ __('messages.save') }}</button>
             </form>
         </x-modal>
@@ -287,7 +313,7 @@ $toothStatusColors = [
 
     {{-- Edit Tooth Chart Modal --}}
     @can('update', $patient)
-        <x-modal id="editToothModal" :title="__('messages.edit_tooth_chart')" size="lg">
+        <x-modal id="editToothModal" :title="__('messages.edit_tooth_chart')" size="xl">
             <form data-ajax-form method="POST" action="{{ route('patients.update', $patient) }}">
                 @csrf @method('PUT')
                 <div class="tooth-chart-editor">
@@ -335,7 +361,7 @@ $toothStatusColors = [
     @endcan
 
     @can('create', \App\Models\Payment::class)
-        <x-modal id="addPaymentModal" :title="__('messages.record_payment')">
+        <x-modal id="addPaymentModal" :title="__('messages.record_payment')" >
             <form data-ajax-form method="POST" action="{{ route('payments.store', $patient) }}">
                 @csrf
                 <x-form-select name="treatment_id" :label="__('messages.treatment')" required :placeholder="__('messages.select_treatment')"
@@ -349,6 +375,29 @@ $toothStatusColors = [
             </form>
         </x-modal>
     @endcan
+
+    {{-- X-Ray View Modal --}}
+    @if($patient->xray_photo)
+        <x-modal id="xrayViewModal" :title="__('messages.xray_photo')" size="xl" :centered="true">
+            <div class="text-center bg-dark p-0" style="margin: -1rem; margin-bottom: 1rem;">
+                <img src="{{ $patient->xrayPhotoUrl() }}" class="img-fluid" style="max-height: 65vh;" alt="X-Ray Full">
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small font-monospace">{{ basename($patient->xray_photo) }}</span>
+                <div>
+                    <a href="{{ $patient->xrayPhotoUrl() }}" download class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-download"></i> {{ __('messages.download') }}
+                    </a>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
+                        {{ __('messages.close') }}
+                    </button>
+                </div>
+            </div>
+        </x-modal>
+    @endif
+    
+   
+    
 @endsection
 
 @push('styles')
@@ -442,6 +491,25 @@ $toothStatusColors = [
 .xray-image:hover {
     transform: scale(1.02);
 }
+
+/*#editPatientModal {
+    max-height: calc(100vh - 2rem);
+    margin-bottom: 1rem;
+    align-items: flex-start !important;
+    padding-top: 1rem;
+}*/
+/* Fix ALL centered modals: sit below top edge with internal scroll */
+/*.modal-dialog-centered {
+    align-items: flex-start !important;
+    min-height: auto !important;
+}
+.modal-dialog-centered .modal-content {
+    max-height: calc(100vh - 3.5rem);
+}
+.modal-dialog-centered .modal-body {
+    overflow-y: auto;
+}*/
+
 /* RTL support for tooth chart */
 [dir="rtl"] .tooth-arch {
     flex-direction: row-reverse;

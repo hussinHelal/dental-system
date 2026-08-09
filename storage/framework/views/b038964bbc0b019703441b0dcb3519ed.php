@@ -1,7 +1,7 @@
 <?php $attributes ??= new \Illuminate\View\ComponentAttributeBag;
 
 $__newAttributes = [];
-$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames((['id', 'title', 'size' => null]));
+$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames((['id', 'title', 'size' => null, 'centered' => false, 'scrollable' => false]));
 
 foreach ($attributes->all() as $__key => $__value) {
     if (in_array($__key, $__propNames)) {
@@ -16,7 +16,7 @@ $attributes = new \Illuminate\View\ComponentAttributeBag($__newAttributes);
 unset($__propNames);
 unset($__newAttributes);
 
-foreach (array_filter((['id', 'title', 'size' => null]), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
+foreach (array_filter((['id', 'title', 'size' => null, 'centered' => false, 'scrollable' => false]), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
     $$__key = $$__key ?? $__value;
 }
 
@@ -29,7 +29,7 @@ foreach ($attributes->all() as $__key => $__value) {
 unset($__defined_vars, $__key, $__value); ?>
 
 <div <?php echo e($attributes->merge(['class' => 'modal fade', 'id' => $id, 'tabindex' => '-1', 'aria-labelledby' => $id.'Label', 'aria-hidden' => 'true'])); ?>>
-    <div class="modal-dialog <?php echo e($size ? 'modal-'.$size : ''); ?> modal-dialog-centered">
+    <div class="modal-dialog <?php echo e($size ? 'modal-'.$size : ''); ?> <?php echo e($centered ? 'modal-dialog-centered' : ''); ?> <?php echo e($scrollable ? 'modal-dialog-scrollable' : ''); ?>">
         <div class="modal-content zedan-card">
             <div class="modal-header">
                 <h5 class="modal-title" id="<?php echo e($id); ?>Label"><?php echo e($title); ?></h5>

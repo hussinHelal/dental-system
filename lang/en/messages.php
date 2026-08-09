@@ -387,4 +387,14 @@ return [
 
     'showPassword' => 'Show Password',
     'passwordPlaceHolder' => 'Password',
+    'no_xray' => 'no X-Ray',
+    'remove_photo' => 'Remove Photo',
+    'remove_xray' => 'Remove X-ray',
+    'remove_crown' => 'Remove Crown Photo',
+
+    'crown_color'     => 'Crown Color',
+    'no_crown_color'  => 'No crown color recorded.',
+    'download'           => 'Download',
+    'close'              => 'Close',
+    'view'               => 'View',
 ];

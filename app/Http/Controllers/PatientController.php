@@ -64,6 +64,7 @@ class PatientController extends Controller
         }
 
         $data['tooth_chart'] = $this->defaultToothChart();
+        
 
         $patient = Patient::create($data);
 
@@ -81,7 +82,15 @@ class PatientController extends Controller
 
         $data = $request->validated();
 
-        /* BUG FIX: delete old images before storing new ones */
+        if ($request->has('remove_photo') && $patient->photo) {
+            Storage::disk('public')->delete($patient->photo);
+            $data['photo'] = null;
+        }
+        if ($request->has('remove_xray') && $patient->xray_photo) {
+            Storage::disk('public')->delete($patient->xray_photo);
+            $data['xray_photo'] = null;
+        }
+     
         if ($request->hasFile('photo')) {
             if ($patient->photo) {
                 Storage::disk('public')->delete($patient->photo);
@@ -123,14 +132,13 @@ class PatientController extends Controller
     {
         $this->authorize('delete', $patient);
 
-        /* BUG FIX: clean up stored files before delete */
         if ($patient->photo) {
             Storage::disk('public')->delete($patient->photo);
         }
         if ($patient->xray_photo) {
             Storage::disk('public')->delete($patient->xray_photo);
         }
-
+       
         $patient->delete();
 
         return $this->respondSuccess(

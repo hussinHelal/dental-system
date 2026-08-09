@@ -25,6 +25,7 @@ return new class extends Migration
                 ->constrained('users')->nullOnDelete();
             $table->string('xray_photo')->nullable()->after('photo');
             $table->json('tooth_chart')->nullable()->after('xray_photo');
+            $table->string('crown_color', 50)->nullable()->after('tooth_chart');
             $table->timestamps();
         });
     }
@@ -33,7 +34,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('patients');
         Schema::table('patients', function (Blueprint $table) {
-            $table->dropColumn(['xray_photo', 'tooth_chart']);
+            $table->dropColumn(['xray_photo', 'tooth_chart', 'crown_color']);
         });
     }
 };

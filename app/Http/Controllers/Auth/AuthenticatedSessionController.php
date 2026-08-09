@@ -40,7 +40,7 @@ class AuthenticatedSessionController extends Controller
         activity('auth')
             ->causedBy($user)
             ->withProperties(['ip' => $request->ip()])
-            ->event('login')
+            ->event('logout')
             ->log('logout');
 
         Auth::guard('web')->logout();

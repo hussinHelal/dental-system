@@ -34,6 +34,7 @@ class PatientRequest extends FormRequest
             'xray_photo'     => ['nullable', 'image', 'max:5120'],
             'tooth_chart'    => ['nullable', 'array'],
             'tooth_chart.*'  => ['nullable', 'in:healthy,decayed,treated,missing,root_canal,crown'],
+            'crown_color' => ['nullable', 'string', 'max:50'],
         ];
     }
 

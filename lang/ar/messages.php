@@ -394,6 +394,15 @@ return [
 
     'show_password' => 'إظهار كلمة المرور',
     'passwordPlaceHolder' => 'كلمه السر' ,
-    
+
+    'no_xray'            => 'لم يتم رفع أشعة سينية.',
+    'remove_photo'       => 'إزالة الصورة',
+    'remove_xray'        => 'إزالة الأشعة ',
+    'remove_crown'       => 'إزالة صورة التاج',
+    'download'           => 'تحميل',
+    'close'              => 'إغلاق',
+    'view'               => 'عرض',
+    'crown_color'     => 'لون التاج',
+    'no_crown_color'  => 'لم يتم تسجيل لون التاج.',
 ];
 

@@ -17,9 +17,8 @@ class Patient extends Model
     protected $fillable = [
         'full_name', 'phone', 'date_of_birth', 'age',
         'address', 'gender', 'notes', 'photo', 'xray_photo',
-        'tooth_chart', 'created_by',
+        'tooth_chart','crown_color', 'created_by',
     ];
-
     protected $casts = [
         'date_of_birth' => 'date',
         'tooth_chart'   => 'array',
@@ -32,6 +31,7 @@ class Patient extends Model
             ->logOnly([
                 'full_name', 'phone', 'date_of_birth', 'age',
                 'address', 'gender', 'notes', 'tooth_chart',
+                'crown_color', 'xray_photo'
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
@@ -61,9 +61,6 @@ class Patient extends Model
         return $this->date_of_birth?->age ?? $this->age;
     }
 
-    /**
-     * OPTIMIZATION: database aggregation instead of loading all payments.
-     */
     public function paymentSummary(): array
     {
         $aggregates = $this->payments()
@@ -94,10 +91,11 @@ class Patient extends Model
             : null;
     }
 
-    /**
-     * BUG FIX: removed redundant json_decode — $casts already handles it.
-     * Ensures all 32 teeth always have a valid status.
-     */
+    public function crownColor(): ?string
+    {
+        return $this->crown_color;
+    }
+
     public function getToothChartAttribute($value): array
     {
         $chart = $value ? json_decode($value, true) : [];
