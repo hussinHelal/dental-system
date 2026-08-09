@@ -384,4 +384,7 @@ return [
     'years' => 'years',
     'patient_info' => 'Patient Information',
     'payment_summary' => 'Payment Summary',
+
+    'showPassword' => 'Show Password',
+    'passwordPlaceHolder' => 'Password',
 ];

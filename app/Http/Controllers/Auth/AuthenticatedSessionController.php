@@ -27,6 +27,7 @@ class AuthenticatedSessionController extends Controller
         activity('auth')
             ->causedBy(Auth::user())
             ->withProperties(['ip' => $request->ip()])
+            ->event('login')
             ->log('login');
 
         return redirect()->intended(route('dashboard'));
@@ -39,6 +40,7 @@ class AuthenticatedSessionController extends Controller
         activity('auth')
             ->causedBy($user)
             ->withProperties(['ip' => $request->ip()])
+            ->event('login')
             ->log('logout');
 
         Auth::guard('web')->logout();

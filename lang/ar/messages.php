@@ -391,5 +391,9 @@ return [
     'cancel' => 'إلغاء',
     'book' => 'حجز',
     'confirm_delete_patient' => 'هل أنت متأكد من حذف هذا المريض؟ سيتم حذف جميع سجلاته نهائيًا.',
+
+    'show_password' => 'إظهار كلمة المرور',
+    'passwordPlaceHolder' => 'كلمه السر' ,
+    
 ];
 

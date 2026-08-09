@@ -1,3 +1,12 @@
 @import "bootstrap/dist/css/bootstrap.rtl.min.css";
 @import "bootstrap-icons/font/bootstrap-icons.css";
+@import "vendor/fortawesome/font-awesome/css/all.css";
 @import "./theme.css";
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+}

@@ -1,3 +1,4 @@
+@echo off
 php artisan optimize:clear
 php artisan cache:clear
 php artisan view:clear
