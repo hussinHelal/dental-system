@@ -54,7 +54,7 @@ class Doctor extends Model
     {
         return $this->photo
             ? asset('storage/'.$this->photo)
-            : asset('images/default-doctor.png');
+            : asset('images/default-doctor.svg');
     }
 
     public function getWorkingHoursSummaryAttribute(): string

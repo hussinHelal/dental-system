@@ -46,7 +46,7 @@ class InventoryItem extends Model
     {
         return $this->photo
             ? asset('storage/'.$this->photo)
-            : asset('images/default-item.png');
+            : asset('images/default-item.svg');
     }
 
     public function scopeSearch($query, ?string $term)

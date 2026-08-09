@@ -13,15 +13,11 @@ class DoctorSeeder extends Seeder
         $adminUser = User::where('username', 'doctor')->first();
 
         Doctor::firstOrCreate(
-            ['name' => 'Dr. Amina Zedan'],
+            ['name' => 'Dr. Ahmed Zedan'],
             [
                 'user_id' => $adminUser?->id,
                 'specialty' => 'General & Cosmetic Dentistry',
                 'phone' => '+20 100 123 4567',
-                'working_hours' => [
-                    'sat' => ['09:00-17:00'], 'sun' => ['09:00-17:00'], 'mon' => ['09:00-17:00'],
-                    'tue' => ['09:00-17:00'], 'wed' => ['09:00-17:00'], 'thu' => ['09:00-14:00'],
-                ],
                 'is_active' => true,
             ]
         );
@@ -32,10 +28,6 @@ class DoctorSeeder extends Seeder
                 'user_id' => null,
                 'specialty' => 'Orthodontics',
                 'phone' => '+20 100 765 4321',
-                'working_hours' => [
-                    'sat' => ['12:00-20:00'], 'mon' => ['12:00-20:00'],
-                    'wed' => ['12:00-20:00'], 'thu' => ['12:00-20:00'],
-                ],
                 'is_active' => true,
             ]
         );

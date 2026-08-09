@@ -81,7 +81,7 @@ class Patient extends Model
     {
         return $this->photo
             ? asset('storage/'.$this->photo)
-            : asset('images/default-patient.png');
+            : asset('images/default-patient.svg');
     }
 
     public function xrayPhotoUrl(): ?string
