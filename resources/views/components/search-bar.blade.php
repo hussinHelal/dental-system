@@ -5,7 +5,7 @@
         <input type="hidden" name="{{ $key }}" value="{{ $val }}">
     @endforeach
     <div class="input-group">
-        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <span class="input-group-text "><i class="fa-solid fa-search"></i></span>
         <input
             type="search"
             name="q"

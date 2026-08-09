@@ -1,4 +1,4 @@
-@import "bootstrap/dist/css/bootstrap.min.css";
+@import "bootstrap/dist/css/bootstrap.css";
 @import "bootstrap-icons/font/bootstrap-icons.css";
-@import "vendor/fortawesome/font-awesome/css/all.css";
+@import '@fortawesome/fontawesome-free/css/all.min.css';
 @import "./theme.css";

@@ -1,7 +1,5 @@
 import * as bootstrap from 'bootstrap';
 import Chart from 'chart.js/auto';
-import "../../vendor/fortawesome/font-awesome/js/all.js";
-
 window.bootstrap = bootstrap;
 
 /**

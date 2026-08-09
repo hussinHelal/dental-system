@@ -4,7 +4,7 @@
 
 @section('content')
     <h3 class="mb-3">{{ __('messages.profile') }}</h3>
-
+  <center>
     <div class="card zedan-card shadow-sm" style="max-width: 500px;">
         <div class="card-body shadow-sm">
             @if ($errors->any())
@@ -37,4 +37,5 @@
             </form>
         </div>
     </div>
+  </center>
 @endsection
