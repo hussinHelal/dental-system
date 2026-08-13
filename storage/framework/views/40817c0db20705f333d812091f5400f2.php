@@ -33,7 +33,7 @@ unset($__defined_vars, $__key, $__value); ?>
         <input type="hidden" name="<?php echo e($key); ?>" value="<?php echo e($val); ?>">
     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     <div class="input-group">
-        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <span class="input-group-text "><i class="fa-solid fa-search"></i></span>
         <input
             type="search"
             name="q"

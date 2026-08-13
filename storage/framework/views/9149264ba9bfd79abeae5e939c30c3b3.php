@@ -74,23 +74,56 @@
         </div>
     </nav>
 
-    <div class="d-flex">
-        <?php
-            $navItems = [
-                ['route' => 'dashboard', 'icon' => 'bi-speedometer2', 'label' => __('messages.dashboard')],
-                ['route' => 'appointments.index', 'icon' => 'bi-calendar-check', 'label' => __('messages.appointments')],
-                ['route' => 'patients.index', 'icon' => 'bi-people', 'label' => __('messages.patients')],
-                ['route' => 'doctors.index', 'icon' => 'bi-person-badge', 'label' => __('messages.doctors')],
-                ['route' => 'rooms.index', 'icon' => 'bi-door-open', 'label' => __('messages.rooms')],
-                ['route' => 'treatments.index', 'icon' => 'bi-clipboard2-pulse', 'label' => __('messages.treatments')],
-                ['route' => 'inventory.index', 'icon' => 'bi-box-seam', 'label' => __('messages.inventory')],
-                ['route' => 'backups.index', 'icon' => 'bi-cloud-arrow-down', 'label' => __('messages.backups')],
-            ];
-            if (auth()->user()->isDoctor()) {
-                $navItems[] = ['route' => 'users.index', 'icon' => 'bi-person-gear', 'label' => __('messages.staff')];
-                $navItems[] = ['route' => 'activity-log.index', 'icon' => 'bi-clock-history', 'label' => __('messages.activity_log')];
-            }
-        ?>
+    
+        
+<div class="d-flex">
+   <?php
+    $navItems = [
+        ['route' => 'dashboard', 'icon' => 'bi-speedometer2', 'label' => __('messages.dashboard')],
+        ['route' => 'appointments.index', 'icon' => 'bi-calendar-check', 'label' => __('messages.appointments')],
+        ['route' => 'patients.index', 'icon' => 'bi-people', 'label' => __('messages.patients')],
+        ['route' => 'doctors.index', 'icon' => 'bi-person-badge', 'label' => __('messages.doctors')],
+        ['route' => 'rooms.index', 'icon' => 'bi-door-open', 'label' => __('messages.rooms')],
+        ['route' => 'treatments.index', 'icon' => 'bi-clipboard2-pulse', 'label' => __('messages.treatments')],
+        ['route' => 'inventory.index', 'icon' => 'bi-box-seam', 'label' => __('messages.inventory')],
+        
+        ['route' => 'suppliers.index', 'icon' => 'bi-truck', 'label' => __('dental_navigation.procurement'),],
+        ['route' => 'dental-labs.index', 'icon' => 'bi-building-gear', 'label' => __('dental_navigation.labs'), ],
+        ['route' => 'lab-cases.index', 'icon' => 'bi-box-seam', 'label' => __('dental_navigation.lab_cases'), ],
+        ['route' => 'assets.index', 'icon' => 'bi-pc-display', 'label' => __('dental_navigation.assets'), ],
+        ['route' => 'insurance.index',  'icon' => 'bi-shield-check', 'label' => __('dental_navigation.insurance'), ],
+        ['route' => 'reports.index', 'icon' => 'bi-bar-chart-line', 'label' => __('dental_navigation.reports'), ],
+        ['route' => 'backups.index', 'icon' => 'bi-cloud-arrow-down', 'label' => __('messages.backups')],
+
+// Keep Employees inside the existing Doctor-only condition.
+// [
+//     'route' => 'employees.index',
+//     'icon' => 'bi-person-vcard',
+//     'label' => __('dental_navigation.employees'),
+// ],
+    ];
+
+    if (auth()->user()->isDoctor()) {
+        // $navItems[] = [
+        //     'route' => 'employees.index',
+        //     'icon' => 'bi-person-vcard',
+        //     'label' => __('dental_navigation.employees'),
+        // ];
+
+        $navItems[] = [
+            'route' => 'users.index',
+            'icon' => 'bi-person-gear',
+            'label' => __('messages.staff'),
+        ];
+
+        $navItems[] = [
+            'route' => 'activity-log.index',
+            'icon' => 'bi-clock-history',
+            'label' => __('messages.activity_log'),
+        ];
+        
+    }
+?>
 
         <div class="offcanvas-lg offcanvas-start zedan-sidebar p-3" tabindex="-1" id="zedanSidebar">
             <div class="offcanvas-header d-lg-none">

@@ -403,4 +403,12 @@ return [
     'treatment' => 'Treatment',
     'description' => 'Description',
     'photo_replace_hint' => 'Leave empty to keep the current photo.',
+
+    'procurement' => 'Procurement',
+    'labs' => 'Labs',
+    'lab_cases' => 'Lab Cases',
+    'assets' => 'Assets Management',
+    'insurance' => 'Insurance',
+    'reports' => 'Reports',
+    'employees' => 'Employees',
 ];

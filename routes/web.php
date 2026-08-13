@@ -14,6 +14,15 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TreatmentController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ToothChartController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\DentalLabController;
+use App\Http\Controllers\LabCaseController;
+use App\Http\Controllers\AssetController;
+use App\Http\Controllers\InsuranceContractController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -138,4 +147,38 @@ Route::middleware('auth')->group(function () {
     Route::get('/patients/{patient}/tooth-chart', [ToothChartController::class, 'show'])->name('patients.tooth-chart');
     Route::post('/patients/{patient}/tooth-chart', [ToothChartController::class, 'update'])->name('patients.tooth-chart.update');
     Route::delete('/patients/{patient}/tooth-chart/{tooth_number}', [ToothChartController::class, 'destroy'])->name('patients.tooth-chart.destroy');
+    Route::get('/patients/lookup', [PatientController::class, 'search'])
+    ->name('patients.lookup');
+    Route::get('/lab-cases/patient-lookup', [LabCaseController::class, 'patientLookup'])
+    ->name('lab-cases.patient-lookup');
+    
+    // Procurement: Doctors and Receptionists can work with records; only Doctors delete.
+    Route::middleware('role:Doctor|Receptionist')->group(function () {
+        Route::resource('suppliers', SupplierController::class)->except(['show', 'create', 'edit', 'destroy']);
+        Route::resource('purchases', PurchaseController::class)->except(['show', 'create', 'edit', 'destroy']);
+        Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->middleware('role:Doctor')->name('suppliers.destroy');
+        Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy'])->middleware('role:Doctor')->name('purchases.destroy');
+
+        Route::resource('dental-labs', DentalLabController::class)
+            ->except(['show', 'create', 'edit', 'destroy'])
+            ->parameters(['dental-labs' => 'dentalLab']);
+        Route::resource('lab-cases', LabCaseController::class)
+            ->except(['show', 'create', 'edit', 'destroy'])
+            ->parameters(['lab-cases' => 'labCase']);
+        Route::delete('/dental-labs/{dentalLab}', [DentalLabController::class, 'destroy'])->middleware('role:Doctor')->name('dental-labs.destroy');
+        Route::delete('/lab-cases/{labCase}', [LabCaseController::class, 'destroy'])->middleware('role:Doctor')->name('lab-cases.destroy');
+    });
+
+    Route::middleware('role:Doctor')->group(function () {
+        Route::resource('assets', AssetController::class)->except(['show', 'create', 'edit']);
+        Route::resource('insurance', InsuranceContractController::class)
+            ->except(['show', 'create', 'edit'])
+            ->parameters(['insurance' => 'insurance']);
+        Route::resource('employees', EmployeeController::class)->except(['show', 'create', 'edit']);
+
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.export-excel');
+        Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
+    });
+    
 });

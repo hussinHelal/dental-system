@@ -410,6 +410,14 @@ return [
     'treatment' => 'العلاج',
     'description' => 'الوصف',
     'photo_replace_hint' => 'اتركه فارغًا للاحتفاظ بالصورة الحالية.',
+
+    'procurement' => 'المشتريات والتوريد',
+    'labs' => 'المعامل',
+    'lab_cases' => 'حالات المعمل',
+    'assets' => 'الأصول',
+    'insurance' => 'التأمين',
+    'reports' => 'التقارير',
+    'employees' => 'الموظفون',
     
 ];
 
