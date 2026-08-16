@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'title' => 'Tooth Chart',
+    'tooth' => 'Tooth',
+    'status' => 'Status',
+    'notes' => 'Notes',
+    'cancel' => 'Cancel',
+    'save' => 'Save',
+    'clear' => 'Clear',
+    'saved' => 'Tooth updated.',
+    'cleared' => 'Tooth cleared.',
+    'invalid_tooth_number' => 'Invalid tooth number.',
+    'save_failed' => 'Could not save — please check the form and try again.',
+    'network_error' => 'Network error — please try again.',
+    'status_healthy' => 'Healthy',
+    'status_caries' => 'Caries / Decay',
+    'status_filled' => 'Filled',
+    'status_crown' => 'Crown',
+    'status_root_canal' => 'Root Canal',
+    'status_missing' => 'Missing / Extracted',
+    'status_bridge' => 'Bridge',
+    'status_implant' => 'Implant',
+    'status_impacted' => 'Impacted',
+];

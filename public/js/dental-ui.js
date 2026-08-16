@@ -228,6 +228,65 @@
         });
     };
 
+    // Adds one row to a purchase's item-lines table (see purchases/partials/fields.blade.php).
+    // Built via DOM methods rather than innerHTML + string concatenation on purpose:
+    // item_name is free-text user input, and a name containing a quote or "<" would
+    // otherwise break out of the HTML attribute and inject markup that runs for anyone
+    // who later opens that purchase's edit modal.
+    const addPurchaseItemRow = (tableId, itemName, quantity, unitPrice) => {
+        itemName = itemName || '';
+        quantity = quantity || '';
+        unitPrice = unitPrice || '';
+
+        const tbody = document.querySelector('#' + tableId + ' tbody');
+        if (!tbody) {
+            console.error('addPurchaseItemRow: no table with id "' + tableId + '"');
+            return;
+        }
+        const index = tbody.children.length;
+
+        const makeInput = (name, value, type, extra) => {
+            const input = document.createElement('input');
+            input.type = type || 'text';
+            input.name = name;
+            input.className = 'form-control form-control-sm';
+            input.required = true;
+            input.value = value; // DOM property assignment — always safe, no HTML parsing involved
+            if (extra) {
+                Object.keys(extra).forEach((key) => input.setAttribute(key, extra[key]));
+            }
+            return input;
+        };
+
+        const makeCell = (input) => {
+            const td = document.createElement('td');
+            td.appendChild(input);
+            return td;
+        };
+
+        const row = document.createElement('tr');
+        row.appendChild(makeCell(makeInput(`items[${index}][item_name]`, itemName)));
+        row.appendChild(makeCell(makeInput(`items[${index}][quantity]`, quantity, 'number', { step: '0.01', min: '0.01' })));
+        row.appendChild(makeCell(makeInput(`items[${index}][unit_price]`, unitPrice, 'number', { step: '0.01', min: '0' })));
+
+        const removeCell = document.createElement('td');
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-sm btn-outline-danger';
+        removeBtn.textContent = '\u00d7';
+        removeBtn.addEventListener('click', () => row.remove());
+        removeCell.appendChild(removeBtn);
+        row.appendChild(removeCell);
+
+        tbody.appendChild(row);
+    };
+
+    // Exposed globally: purchases/partials/fields.blade.php calls this directly via
+    // an onclick="" attribute (a plain global function, not window.DentalUI.___),
+    // and purchases/index.blade.php calls it from inline <script> blocks to
+    // pre-populate the edit modal with each purchase's existing items.
+    window.addPurchaseItemRow = addPurchaseItemRow;
+
     window.DentalUI = { compactMoney, parseHumanAmount, initMoneyInputs, initPatientAutocomplete };
 
     document.addEventListener('DOMContentLoaded', () => {

@@ -300,6 +300,8 @@ return [
     'module_payments' => 'Payments',
     'module_inventory' => 'Inventory',
     'module_auth' => 'Login/Logout',
+    'module_tooth_records'=> 'Tooth Records',
+    'tooth_records'=>'Tooth Records',
 
     // X-Ray
     'xray_photo' => 'X-Ray Photo',
@@ -403,12 +405,4 @@ return [
     'treatment' => 'Treatment',
     'description' => 'Description',
     'photo_replace_hint' => 'Leave empty to keep the current photo.',
-
-    'procurement' => 'Procurement',
-    'labs' => 'Labs',
-    'lab_cases' => 'Lab Cases',
-    'assets' => 'Assets Management',
-    'insurance' => 'Insurance',
-    'reports' => 'Reports',
-    'employees' => 'Employees',
 ];

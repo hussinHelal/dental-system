@@ -22,7 +22,6 @@
                 </div>
                 <div>
                     <h3 class="mb-0">{{ __('suppliers.title') }}</h3>
-                    
                 </div>
             </div>
 
@@ -36,11 +35,14 @@
                 <button class="btn btn-outline-primary text-nowrap" type="submit">
                     {{ __('suppliers.filter') }}
                 </button>
-                @if(request()->filled('search'))
+                @if (request()->filled('search'))
                     <a href="{{ route('suppliers.index') }}" class="btn btn-outline-secondary text-nowrap">
                         <i class="bi bi-x-lg"></i>
                     </a>
                 @endif
+                <a href="{{ route('purchases.index') }}" class="btn btn-outline-primary text-nowrap">
+                    <i class="bi bi-cart3 me-1"></i>{{ __('purchases.title') }}
+                </a>
                 <button type="button" class="btn btn-primary text-nowrap" data-bs-toggle="modal" data-bs-target="#createSupplierModal">
                     <i class="bi bi-plus-lg me-1"></i>{{ __('suppliers.add_supplier') }}
                 </button>
@@ -112,43 +114,8 @@
     </div>
 
     @foreach ($suppliers as $supplier)
-        <div class="modal fade" id="editSupplierModal{{ $supplier->id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <form action="{{ route('suppliers.update', $supplier) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        <div class="modal-header">
-                            <h5 class="modal-title">{{ __('suppliers.edit_supplier') }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">@include('suppliers.partials.fields', ['supplier' => $supplier])</div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('suppliers.cancel') }}</button>
-                            <button type="submit" class="btn btn-primary">{{ __('suppliers.save') }}</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+        @include('suppliers.partials.edit-modal', ['supplier' => $supplier])
     @endforeach
 
-    <div class="modal fade" id="createSupplierModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <form action="{{ route('suppliers.store') }}" method="POST">
-                    @csrf
-                    <div class="modal-header">
-                        <h5 class="modal-title">{{ __('suppliers.add_supplier') }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">@include('suppliers.partials.fields', ['supplier' => null])</div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('suppliers.cancel') }}</button>
-                        <button type="submit" class="btn btn-primary">{{ __('suppliers.save') }}</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    @include('suppliers.partials.create-modal')
 @endsection

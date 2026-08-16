@@ -19,4 +19,5 @@ return [
     'income' => 'Income',
     'expense' => 'Expense',
     'pdf_range_too_large' => 'The PDF report period cannot exceed one year.',
+    'category_purchase' => 'Purchase',
 ];

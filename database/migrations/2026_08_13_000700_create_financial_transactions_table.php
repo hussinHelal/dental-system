@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('financial_transactions', function (Blueprint $table) {
             $table->id();
             $table->date('transaction_date')->index();
-            $table->string('type', 20)->index(); // income | expense
+            $table->string('type', 20); // income | expense — covered by the composite index below, no separate index needed
             $table->string('category', 100)->nullable()->index();
             $table->decimal('amount', 12, 2);
             $table->string('payment_method', 50)->nullable();

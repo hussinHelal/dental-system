@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'title' => 'مخطط الأسنان',
+    'tooth' => 'السن',
+    'status' => 'الحالة',
+    'notes' => 'ملاحظات',
+    'cancel' => 'إلغاء',
+    'save' => 'حفظ',
+    'clear' => 'مسح',
+    'saved' => 'تم تحديث السن.',
+    'cleared' => 'تم مسح السن.',
+    'invalid_tooth_number' => 'رقم سن غير صالح.',
+    'save_failed' => 'تعذر الحفظ — يرجى مراجعة البيانات والمحاولة مرة أخرى.',
+    'network_error' => 'خطأ في الاتصال — يرجى المحاولة مرة أخرى.',
+    'status_healthy' => 'سليم',
+    'status_caries' => 'تسوس',
+    'status_filled' => 'حشو',
+    'status_crown' => 'تاج',
+    'status_root_canal' => 'علاج عصب',
+    'status_missing' => 'مفقود / مخلوع',
+    'status_bridge' => 'جسر',
+    'status_implant' => 'زراعة',
+    'status_impacted' => 'مطمور',
+];

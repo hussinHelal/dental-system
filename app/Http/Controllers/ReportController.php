@@ -117,7 +117,7 @@ class ReportController extends Controller
             ];
         } else {
             $purchases = Purchase::query()
-                ->select(['id', 'purchase_date', 'total_amount', 'payment_status', 'notes'])
+                ->select(['id', 'purchase_date', 'total_amount', 'notes'])
                 ->whereBetween('purchase_date', [$from, $to])
                 ->orderBy('purchase_date')
                 ->orderBy('id')
@@ -131,10 +131,16 @@ class ReportController extends Controller
                 $transaction->forceFill([
                     'transaction_date' => $purchase->purchase_date,
                     'type' => TransactionType::Expense,
-                    'category' => 'Purchase',
+                    'category' => __('reports.category_purchase'),
                     'amount' => $purchase->total_amount,
-                    'payment_method' => $purchase->payment_status,
                     'description' => $purchase->notes,
+                    // payment_method is deliberately left unset here: it's a
+                    // different concept from the purchase's payment_status
+                    // (cash/bank/other vs paid/partial/unpaid), and assigning
+                    // one to the other would put a PurchasePaymentStatus enum
+                    // instance into a plain string column — harmless today
+                    // since the PDF template doesn't render this field, but a
+                    // landmine the moment someone adds it to the template.
                 ]);
 
                 return $transaction;

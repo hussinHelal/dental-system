@@ -22,7 +22,8 @@ use App\Http\Controllers\AssetController;
 use App\Http\Controllers\InsuranceContractController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\FinancialTransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -102,6 +103,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/appointments/quick-patient', [AppointmentController::class, 'quickPatient'])
     ->name('appointments.quick-patient');
 
+    Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
+    Route::get('/agenda/data', [AgendaController::class, 'data'])->name('agenda.data');
+
     // Payments - nested under a patient; Receptionist records
     // payments/installments but never deletes history.
     Route::post('/patients/{patient}/payments', [PaymentController::class, 'store'])->name('payments.store');
@@ -167,6 +171,7 @@ Route::middleware('auth')->group(function () {
             ->parameters(['lab-cases' => 'labCase']);
         Route::delete('/dental-labs/{dentalLab}', [DentalLabController::class, 'destroy'])->middleware('role:Doctor')->name('dental-labs.destroy');
         Route::delete('/lab-cases/{labCase}', [LabCaseController::class, 'destroy'])->middleware('role:Doctor')->name('lab-cases.destroy');
+        Route::get('/lab-cases/patient-lookup', [LabCaseController::class, 'patientLookup'])->name('lab-cases.patient-lookup');
     });
 
     Route::middleware('role:Doctor')->group(function () {
@@ -176,9 +181,15 @@ Route::middleware('auth')->group(function () {
             ->parameters(['insurance' => 'insurance']);
         Route::resource('employees', EmployeeController::class)->except(['show', 'create', 'edit']);
 
+           Route::resource('finance', FinancialTransactionController::class)
+            ->except(['show', 'create', 'edit'])
+            ->parameters(['finance' => 'transaction']);
+            
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.export-excel');
         Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
     });
+    
+    
     
 });

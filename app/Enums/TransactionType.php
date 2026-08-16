@@ -14,4 +14,12 @@ enum TransactionType: string
             self::Expense => __('reports.expense'),
         };
     }
+
+    public function badgeColor(): string
+    {
+        return match ($this) {
+            self::Income => 'success',
+            self::Expense => 'danger',
+        };
+    }
 }

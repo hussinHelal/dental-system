@@ -19,4 +19,5 @@ return [
     'income' => 'إيراد',
     'expense' => 'مصروف',
     'pdf_range_too_large' => 'لا يمكن أن تتجاوز فترة تقرير PDF سنة واحدة.',
+    'category_purchase' => 'مشتريات',
 ];

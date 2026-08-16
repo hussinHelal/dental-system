@@ -297,6 +297,8 @@ return [
     'module_payments' => 'المدفوعات',
     'module_inventory' => 'المخزون',
     'module_auth' => 'تسجيل الدخول/الخروج',
+    'module_tooth_records' => 'سجلات الاسنان ',
+    'tooth_records' => 'وحده سجلات الاسنان' ,
 
     // Tooth Chart & X-Ray
     'xray_photo' => 'صورة الأشعة',
