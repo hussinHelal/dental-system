@@ -25,6 +25,7 @@
                     <table class="table zedan-responsive-table mb-0 align-middle">
                         <thead>
                             <tr>
+                                <th>{{ __('messages.id') }}</th>
                                 <th>{{ __('messages.name') }}</th>
                                 <th>{{ __('messages.phone') }}</th>
                                 <th>{{ __('messages.age') }}</th>
@@ -35,6 +36,8 @@
                         <tbody>
                             @foreach($patients as $patient)
                                 <tr>
+                                    
+                                    <td data-label="{{ __('messages.id') }}">{{ $patient->id }}</td>
                                     <td data-label="{{ __('messages.name') }}">
                                         <img src="{{ $patient->photoUrl() }}" width="32" height="32" class="rounded-circle me-2" alt="{{ $patient->full_name }}" data-image-preview style="cursor: pointer;">
                                         {{ $patient->full_name }}

@@ -73,7 +73,8 @@
                             <div class="d-flex align-items-center gap-3">
                                 <div class="fw-bold" style="min-width: 100px;">{{ $appointment->time_range_formatted }}</div>
                                 <div>
-                                    <div class="fw-semibold">{{ $appointment->patient->full_name }}</div>
+                                    <div class="fw-semibold"> {{ $appointment->patient->id }} 
+                                                              {{ $appointment->patient->full_name }} </div>
                                     <div class="small text-secondary">
                                         {{ __('messages.visit_type_'.$appointment->visit_type) }}
                                         &middot; {{ $appointment->doctor->name }}

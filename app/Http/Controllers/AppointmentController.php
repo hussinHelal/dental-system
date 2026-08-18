@@ -46,33 +46,80 @@ class AppointmentController extends Controller
     ));
 }
 
-    public function search(Request $request)
-    {
-        $this->authorize('viewAny', Appointment::class);
+    // public function search(Request $request)
+    // {
+    //     $this->authorize('viewAny', Appointment::class);
 
-        $appointments = Appointment::query()
-            ->when($request->filled('q'), function ($q) use ($request) {
-                $term = trim($request->query('q'));
-                $q->whereHas('patient', fn ($p) => $p->where('full_name', 'like', "%{$term}%")
-                    ->orWhere('phone', 'like', "%{$term}%"));
-            })
-            ->when($request->filled('doctor_id'), fn ($q, $v) => $q->where('doctor_id', $v))
-            ->when($request->filled('room_id'), fn ($q, $v) => $q->where('room_id', $v))
-            ->when($request->filled('visit_type'), fn ($q, $v) => $q->where('visit_type', $v))
-            ->when($request->filled('status'), fn ($q, $v) => $q->where('status', $v))
-            ->when($request->filled('date_from'), fn ($q, $v) => $q->whereDate('appointment_date', '>=', $v))
-            ->when($request->filled('date_to'), fn ($q, $v) => $q->whereDate('appointment_date', '<=', $v))
-            ->with(['patient', 'doctor', 'room'])
-            ->orderByDesc('appointment_date')
-            ->paginate(20)
-            ->withQueryString();
+    //     $appointments = Appointment::query()
+    //         ->when($request->filled('q'), function ($q) use ($request) {
+    //             $term = trim($request->query('q'));
+    //             $q->whereHas('patient', fn ($p) => $p->where('full_name', 'like', "%{$term}%")
+    //                 ->orWhere('phone', 'like', "%{$term}%"));
+    //         })
+    //         ->when($request->filled('patient_id'), fn ($q, $v) => $q->where('patient_id', $v))
+    //         ->when($request->filled('doctor_id'), fn ($q, $v) => $q->where('doctor_id', $v))
+    //         ->when($request->filled('room_id'), fn ($q, $v) => $q->where('room_id', $v))
+    //         ->when($request->filled('visit_type'), fn ($q, $v) => $q->where('visit_type', $v))
+    //         ->when($request->filled('status'), fn ($q, $v) => $q->where('status', $v))
+    //         ->when($request->filled('date_from'), fn ($q, $v) => $q->whereDate('appointment_date', '>=', $v))
+    //         ->when($request->filled('date_to'), fn ($q, $v) => $q->whereDate('appointment_date', '<=', $v))
+    //         ->with(['patient', 'doctor', 'room'])
+    //         ->orderByDesc('appointment_date')
+    //         ->paginate(20)
+    //         ->withQueryString();
 
-        $doctors = Doctor::active()->orderBy('name')->get();
-        $rooms   = Room::active()->orderBy('name')->get();
+    //     $doctors = Doctor::active()->orderBy('name')->get();
+    //     $rooms   = Room::active()->orderBy('name')->get();
         
 
-        return view('appointments.search', compact('appointments', 'doctors', 'rooms'));
-    }
+    //     return view('appointments.search', compact('appointments', 'doctors', 'rooms'));
+    // }
+   public function search(Request $request)
+{
+    $this->authorize('viewAny', Appointment::class);
+
+    $appointments = Appointment::query()
+        ->when($request->filled('q'), function ($query) use ($request) {
+            $term = trim($request->query('q'));
+
+            $query->where(function ($subQuery) use ($term) {
+
+                if (is_numeric($term)) {
+                    // Search purely by Patient ID or exact phone number
+                    $subQuery->whereHas('patient', function ($p) use ($term) {
+                        $p->where('id', $term)
+                          ->orWhere('phone', $term);
+                    });
+                } else {
+                    // Search text in Patient Name, Partial Phone, or Room Name
+                    $subQuery->whereHas('patient', function ($p) use ($term) {
+                        $p->where('full_name', 'like', "%{$term}%")
+                          ->orWhere('phone', 'like', "%{$term}%");
+                    })
+                    ->orWhereHas('room', function ($r) use ($term) {
+                        $r->where('name', 'like', "%{$term}%");
+                    });
+                }
+
+            });
+        })
+        ->when($request->filled('patient_id'), fn ($q, $v) => $q->where('patient_id', $v))
+        ->when($request->filled('doctor_id'), fn ($q, $v) => $q->where('doctor_id', $v))
+        ->when($request->filled('room_id'), fn ($q, $v) => $q->where('room_id', $v))
+        ->when($request->filled('visit_type'), fn ($q, $v) => $q->where('visit_type', $v))
+        ->when($request->filled('status'), fn ($q, $v) => $q->where('status', $v))
+        ->when($request->filled('date_from'), fn ($q, $v) => $q->whereDate('appointment_date', '>=', $v))
+        ->when($request->filled('date_to'), fn ($q, $v) => $q->whereDate('appointment_date', '<=', $v))
+        ->with(['patient', 'doctor', 'room'])
+        ->orderByDesc('appointment_date')
+        ->paginate(20)
+        ->withQueryString();
+
+    $doctors = Doctor::active()->orderBy('name')->get();
+    $rooms   = Room::active()->orderBy('name')->get();
+
+    return view('appointments.search', compact('appointments', 'doctors', 'rooms'));
+}
 
     public function availability(Request $request)
     {
@@ -185,7 +232,7 @@ class AppointmentController extends Controller
 
     $validated = $request->validate([
         'full_name' => ['required', 'string', 'max:150'],
-        'phone' => ['required', 'string', 'max:30', 'regex:/^[0-9+\-\s]{7,30}$/', 'unique:patients,phone'],
+        'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s]{7,30}$/'],
         'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
         'age' => ['nullable', 'integer', 'min:0', 'max:130'],
         'gender' => ['nullable', 'in:male,female'],
@@ -206,5 +253,31 @@ class AppointmentController extends Controller
         'message' => __('messages.patient_created'),
         'redirect' => route('appointments.index', ['book_for' => $patient->id]),
     ]);
+
     }
+
+    public function randomPatient(Request $request)
+    {
+        $this->authorize('create', Patient::class);
+
+        $validated = $request->validate([
+            'full_name' => ['required','string','max:150'],
+        ]);
+
+        $validated['created_by'] = $request->user()->id;
+
+        $patient = Patient::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'patient' => [
+                'id' => $patient->id,
+                'full_name' => $patient->full_name,
+                'phone' => $patient->phone,
+            ],
+            'message' => __('messages.patient_created'),
+        ]);
+        
+    }
+
 }

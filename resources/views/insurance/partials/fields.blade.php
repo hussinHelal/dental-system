@@ -25,7 +25,7 @@
             value="{{ old('discount_percentage', $contract->discount_percentage ?? 0) }}">
     </div>
     <div class="col-md-6">
-        <label class="form-label">{{ __('insurance.contact_person') }}</label>
+        <label class="form-label">{{ __('insurance.patient_name') }}</label>
         <div class="position-relative" data-patient-autocomplete data-endpoint="{{ url('/patients/search') }}" data-target-phone="#insurancePhone{{ $contract?->id ?? 'Create' }}">
             <input type="text" name="contact_person" class="form-control" value="{{ old('contact_person', $contract->contact_person ?? '') }}" data-patient-search-input autocomplete="off">
             <div class="dropdown-menu w-100 p-0 shadow-sm d-none" data-patient-results></div>
@@ -33,7 +33,7 @@
         <div class="form-text">{{ __('insurance.contact_person_hint') }}</div>
     </div>
     <div class="col-md-6">
-        <label class="form-label">{{ __('insurance.phone') }}</label>
+        <label class="form-label">{{ __('insurance.patient_phone') }}</label>
         <input id="insurancePhone{{ $contract?->id ?? 'Create' }}" type="text" name="phone" class="form-control" value="{{ old('phone', $contract->phone ?? '') }}">
     </div>
     <div class="col-md-6">

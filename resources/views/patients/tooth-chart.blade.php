@@ -22,27 +22,28 @@
                         <!-- Upper Arch -->
                         <div class="arch upper-arch mb-4">
                             <h6 class="text-center text-muted mb-3">{{ __('messages.upper_arch') }}</h6>
-                            <div class="teeth-rows-wrapper">
-                                <div class="side-label small text-muted">{{ __('messages.left') }}</div>
-                                <div class="teeth-row upper-left">
-                                @foreach([9,10,11,12,13,14,15,16] as $num)
-                                    @include('patients.partials.tooth', [
-                                        'number' => $num,
-                                        'record' => $toothMap[$num] ?? null,
-                                        'label' => $loop->iteration,
-                                    ])
-                                @endforeach
+                            <div class="arch-wrapper">
+                                <span class="arch-side-label me-2">{{ __('messages.left') }}</span>
+                                <div class="single-teeth-row">
+                                    {{-- Upper Left: 8 to 1 towards midline --}}
+                                    @foreach([16,15,14,13,12,11,10,9] as $index => $num)
+                                        @include('patients.partials.tooth', [
+                                            'number' => $num,
+                                            'record' => $toothMap[$num] ?? null,
+                                            'label'  => 8 - $index,
+                                        ])
+                                    @endforeach
+
+                                    {{-- Upper Right: 1 to 8 away from midline --}}
+                                    @foreach([1,2,3,4,5,6,7,8] as $index => $num)
+                                        @include('patients.partials.tooth', [
+                                            'number' => $num,
+                                            'record' => $toothMap[$num] ?? null,
+                                            'label'  => $index + 1,
+                                        ])
+                                    @endforeach
                                 </div>
-                                <div class="teeth-row upper-right">
-                                @foreach([1,2,3,4,5,6,7,8] as $num)
-                                    @include('patients.partials.tooth', [
-                                        'number' => $num,
-                                        'record' => $toothMap[$num] ?? null,
-                                        'label' => $loop->iteration,
-                                    ])
-                                @endforeach
-                                </div>
-                                <div class="side-label small text-muted">{{ __('messages.right') }}</div>
+                                <span class="arch-side-label ms-2">{{ __('messages.right') }}</span>
                             </div>
                         </div>
 
@@ -52,27 +53,28 @@
                         <!-- Lower Arch -->
                         <div class="arch lower-arch mt-4">
                             <h6 class="text-center text-muted mb-3">{{ __('messages.lower_arch') }}</h6>
-                            <div class="teeth-rows-wrapper">
-                                <div class="side-label small text-muted">{{ __('messages.left') }}</div>
-                                <div class="teeth-row lower-left">
-                                @foreach([17,18,19,20,21,22,23,24] as $num)
-                                    @include('patients.partials.tooth', [
-                                        'number' => $num,
-                                        'record' => $toothMap[$num] ?? null,
-                                        'label' => $loop->iteration,
-                                    ])
-                                @endforeach
+                            <div class="arch-wrapper">
+                                <span class="arch-side-label me-2">{{ __('messages.left') }}</span>
+                                <div class="single-teeth-row">
+                                    {{-- Lower Left: 8 to 1 towards midline --}}
+                                    @foreach([24,23,22,21,20,19,18,17] as $index => $num)
+                                        @include('patients.partials.tooth', [
+                                            'number' => $num,
+                                            'record' => $toothMap[$num] ?? null,
+                                            'label'  => 8 - $index,
+                                        ])
+                                    @endforeach
+
+                                    {{-- Lower Right: 1 to 8 away from midline --}}
+                                    @foreach([25,26,27,28,29,30,31,32] as $index => $num)
+                                        @include('patients.partials.tooth', [
+                                            'number' => $num,
+                                            'record' => $toothMap[$num] ?? null,
+                                            'label'  => $index + 1,
+                                        ])
+                                    @endforeach
                                 </div>
-                                <div class="teeth-row lower-right">
-                                @foreach([25,26,27,28,29,30,31,32] as $num)
-                                    @include('patients.partials.tooth', [
-                                        'number' => $num,
-                                        'record' => $toothMap[$num] ?? null,
-                                        'label' => $loop->iteration,
-                                    ])
-                                @endforeach
-                                </div>
-                                <div class="side-label small text-muted">{{ __('messages.right') }}</div>
+                                <span class="arch-side-label ms-2">{{ __('messages.right') }}</span>
                             </div>
                         </div>
                     </div>
@@ -179,26 +181,26 @@
     border-radius: 2px;
 }
 
-.teeth-row {
+.arch-wrapper {
     display: flex;
-    justify-content: center;
-    gap: 4px;
-    flex-wrap: wrap;
-    margin-bottom: 4px;
-}
-
-.teeth-rows-wrapper {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
     width: 100%;
 }
 
-.side-label {
-    width: 48px;
-    text-align: center;
-    opacity: 0.7;
+.arch-side-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--bs-secondary);
+    white-space: nowrap;
+}
+
+.single-teeth-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3px;
+    flex-wrap: nowrap;
 }
 
 .tooth-wrapper {
@@ -207,8 +209,8 @@
     align-items: center;
     cursor: pointer;
     transition: transform 0.15s ease;
-    padding: 4px;
-    border-radius: 8px;
+    padding: 2px;
+    border-radius: 6px;
 }
 
 .tooth-wrapper:hover {
@@ -228,15 +230,15 @@
 }
 
 .tooth-number {
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: var(--bs-secondary);
-    margin-top: 2px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--bs-body-color);
+    margin-top: 3px;
 }
 
 .tooth-svg {
-    width: 36px;
-    height: 48px;
+    width: 34px;
+    height: 46px;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
 }
 
@@ -259,8 +261,8 @@
 .tooth-wrapper.veneer .tooth-svg path { fill: #fff3e0; stroke: #e65100; }
 
 @media (max-width: 768px) {
-    .tooth-svg { width: 28px; height: 38px; }
-    .teeth-row { gap: 2px; }
+    .tooth-svg { width: 24px; height: 34px; }
+    .single-teeth-row { gap: 1px; }
 }
 </style>
 @endpush
@@ -280,10 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     toothWrappers.forEach(wrapper => {
         wrapper.addEventListener('click', () => {
-            // Deselect previous
             toothWrappers.forEach(t => t.classList.remove('selected'));
             
-            // Select current
             wrapper.classList.add('selected');
             currentTooth = wrapper;
             
@@ -334,7 +334,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle form success to update UI without reload
     form.addEventListener('ajax:success', (e) => {
         if (!currentTooth) return;
         const status = statusSelect.value;

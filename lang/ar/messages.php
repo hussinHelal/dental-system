@@ -421,5 +421,9 @@ return [
     'reports' => 'التقارير',
     'employees' => 'الموظفون',
     
+    'phone.unique' => 'رقم الهاتف مكرر',
+    'phone.regex' => 'رقم الهاتف خاطئ',
+    'id' => 'كود',
+    'patient_id'=>'كود'
 ];
 

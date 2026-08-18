@@ -13,12 +13,40 @@ class PatientController extends Controller
 {
     use HandlesImageUploads, RespondsToModals;
 
+    // public function index(Request $request)
+    // {
+    //     $this->authorize('viewAny', Patient::class);
+
+    //     $patients = Patient::search($request->query('q'))
+    //         ->orderBy('full_name')
+    //         ->paginate(15)
+    //         ->withQueryString();
+
+    //     return view('patients.index', compact('patients'));
+    // }
     public function index(Request $request)
     {
         $this->authorize('viewAny', Patient::class);
 
-        $patients = Patient::search($request->query('q'))
-            ->orderBy('full_name')
+        $query = Patient::query();
+
+        if ($request->filled('q')) {
+            $q = trim($request->query('q'));
+
+            $query->where(function ($subQuery) use ($q) {
+                if (is_numeric($q)) {
+                    // Strictly match Patient ID or exact Phone number
+                    $subQuery->where('id', $q)
+                            ->orWhere('phone', $q);
+                } else {
+                    // If searching text, match full_name or partial phone
+                    $subQuery->where('full_name', 'like', "%{$q}%")
+                            ->orWhere('phone', 'like', "%{$q}%");
+                }
+            });
+        }
+
+        $patients = $query->orderBy('full_name')
             ->paginate(15)
             ->withQueryString();
 
@@ -29,7 +57,6 @@ class PatientController extends Controller
     {
         $this->authorize('view', $patient);
 
-        /* CRITICAL FIX: paginate instead of loading ALL history */
         $appointments = $patient->appointments()
             ->with(['doctor', 'room', 'treatment'])
             ->paginate(10);
@@ -165,17 +192,41 @@ class PatientController extends Controller
     //         ->limit(10)
     //         ->get(['id', 'full_name', 'phone']);
     // }
-    public function search(Request $request)
-    {
-        $q = trim($request->query('q', ''));
+    // public function search(Request $request)
+    // {
+    //     $q = trim($request->query('q', ''));
 
-        if ($q === '') {
-            return response()->json([]);
-        }
+    //     if ($q === '') {
+    //         return response()->json([]);
+    //     }
 
-        return Patient::search($q)
-            ->orderBy('full_name')
-            ->limit(10)
-            ->get(['id', 'full_name', 'phone']);
+    //     return Patient::search($q)
+    //         ->orderBy('full_name')
+    //         ->limit(10)
+    //         ->get(['id', 'full_name', 'phone']);
+    // }
+   public function search(Request $request)
+{
+    $q = trim($request->query('q', ''));
+
+    if ($q === '') {
+        return response()->json([]);
     }
+
+    return Patient::query()
+        ->where(function ($query) use ($q) {
+            if (is_numeric($q)) {
+                // If numeric, match ID directly OR exact phone number
+                $query->where('id', $q)
+                      ->orWhere('phone', $q);
+            } else {
+                // If text, match name or partial phone
+                $query->where('full_name', 'like', "%{$q}%")
+                      ->orWhere('phone', 'like', "%{$q}%");
+            }
+        })
+        ->orderBy('full_name')
+        ->limit(10)
+        ->get(['id', 'full_name', 'phone']);
+}
 }

@@ -405,4 +405,8 @@ return [
     'treatment' => 'Treatment',
     'description' => 'Description',
     'photo_replace_hint' => 'Leave empty to keep the current photo.',
+    'phone.unique' => 'patient phone duplicate',
+    'phone.regex' => 'patient phone invalid',
+    'id' => 'id',
+    'patient_id'=>'patient id'
 ];

@@ -67,6 +67,7 @@
                         <thead>
                             <tr>
                                 <th>{{ __('messages.date') }}</th>
+                                <th>{{ __('messages.patient_id') }}</th>
                                 <th>{{ __('messages.patient') }}</th>
                                 <th>{{ __('messages.doctor') }}</th>
                                 <th>{{ __('messages.room') }}</th>
@@ -77,6 +78,7 @@
                             @foreach($appointments as $appointment)
                                 <tr>
                                     <td data-label="{{ __('messages.date') }}">{{ $appointment->appointment_date->toDateString() }} {{ $appointment->time_range_formatted }}</td>
+                                    <td data-label="{{ __('messages.patient_id') }}">{{ $appointment->patient->id }}</td>
                                     <td data-label="{{ __('messages.patient') }}">{{ $appointment->patient->full_name }}</td>
                                     <td data-label="{{ __('messages.doctor') }}">{{ $appointment->doctor->name }}</td>
                                     <td data-label="{{ __('messages.room') }}">{{ $appointment->room->name }}</td>
