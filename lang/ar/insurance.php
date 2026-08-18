@@ -33,4 +33,5 @@ return [
     'created_successfully' => 'تمت إضافة التعاقد بنجاح.',
     'updated_successfully' => 'تم تحديث التعاقد بنجاح.',
     'deleted_successfully' => 'تم حذف التعاقد بنجاح.',
+    'patient_name'=> 'اسم المريض',
 ];

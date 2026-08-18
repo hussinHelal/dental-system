@@ -166,9 +166,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('dental-labs', DentalLabController::class)
             ->except(['show', 'create', 'edit', 'destroy'])
             ->parameters(['dental-labs' => 'dentalLab']);
+            
         Route::resource('lab-cases', LabCaseController::class)
             ->except(['show', 'create', 'edit', 'destroy'])
             ->parameters(['lab-cases' => 'labCase']);
+
         Route::delete('/dental-labs/{dentalLab}', [DentalLabController::class, 'destroy'])->middleware('role:Doctor')->name('dental-labs.destroy');
         Route::delete('/lab-cases/{labCase}', [LabCaseController::class, 'destroy'])->middleware('role:Doctor')->name('lab-cases.destroy');
         Route::get('/lab-cases/patient-lookup', [LabCaseController::class, 'patientLookup'])->name('lab-cases.patient-lookup');

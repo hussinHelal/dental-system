@@ -126,12 +126,14 @@
 
             const closeMenu = () => {
                 menu.classList.add('d-none');
+                menu.classList.remove('show');
                 menu.innerHTML = '';
                 highlighted = -1;
             };
 
             const render = (patients) => {
                 menu.innerHTML = '';
+                menu.classList.add('show');
                 highlighted = -1;
 
                 if (!patients.length) {

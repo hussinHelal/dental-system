@@ -156,11 +156,24 @@ class PatientController extends Controller
         }
         return $chart;
     }
+    // public function search(Request $request)
+    // {
+    //     $q = trim($request->query('q', ''));
+    //     return Patient::where('full_name', 'like', "%{$q}%")
+    //         ->orWhere('phone', 'like', "%{$q}%")
+    //         ->orderBy('full_name')
+    //         ->limit(10)
+    //         ->get(['id', 'full_name', 'phone']);
+    // }
     public function search(Request $request)
     {
         $q = trim($request->query('q', ''));
-        return Patient::where('full_name', 'like', "%{$q}%")
-            ->orWhere('phone', 'like', "%{$q}%")
+
+        if ($q === '') {
+            return response()->json([]);
+        }
+
+        return Patient::search($q)
             ->orderBy('full_name')
             ->limit(10)
             ->get(['id', 'full_name', 'phone']);
