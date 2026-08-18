@@ -34,4 +34,5 @@ return [
     'updated_successfully' => 'Contract updated successfully.',
     'deleted_successfully' => 'Contract deleted successfully.',
     'patient_name' => 'Patient Name',
+    'patient_phone' => 'Patient Phone',
 ];

@@ -61,6 +61,7 @@
                                 <th>{{ __('insurance.company_name') }}</th>
                                 <th>{{ __('insurance.contract_number') }}</th>
                                 <th>{{ __('insurance.patient_name') }}</th>
+                                <th>{{ __('insurance.patient_phone') }}</th>
                                 <th>{{ __('insurance.end_date') }}</th>
                                 <th>{{ __('insurance.discount') }}</th>
                                 <th>{{ __('insurance.status') }}</th>
@@ -77,6 +78,9 @@
                                     <td data-label="{{ __('insurance.contract_number') }}">{{ $contract->contract_number }}</td>
                                     <td data-label="{{ __('insurance.patient_name') }}">
                                         <span class="fw-semibold">{{ $contract->contact_person ?: '-' }}</span>
+                                    </td> 
+                                    <td data-label="{{ __('insurance.patient_phone') }}">
+                                        <span class="fw-semibold">{{ $contract->phone ?: '-' }}</span>
                                     </td>
                                     <td data-label="{{ __('insurance.end_date') }}">{{ $contract->end_date->format('Y-m-d') }}</td>
                                     <td data-label="{{ __('insurance.discount') }}">{{ $contract->discount_percentage }}%</td>
