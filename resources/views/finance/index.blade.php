@@ -6,12 +6,12 @@
     <script src="{{ asset('js/dental-ui.js') }}" defer></script>
 
     <div class="container-fluid px-0">
-        @if (session('success'))
+        {{-- @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
                 {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        @endif
+        @endif --}}
 
         @if ($errors->any())
             <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">

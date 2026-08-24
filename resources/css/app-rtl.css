@@ -31,3 +31,11 @@
 [data-bs-theme="dark"] .zedan-error-code {
     opacity: 0.9;
 }
+
+
+/* app-rtl.css */
+.pagination .page-link[rel="prev"] i,
+.pagination .page-link[rel="next"] i {
+  transform: scaleX(-1);
+  display: inline-block;
+}

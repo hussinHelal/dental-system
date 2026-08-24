@@ -285,3 +285,107 @@ body {
   border-radius: var(--zedan-radius);
   background: rgba(47, 111, 237, 0.03);
 }
+
+
+/* Pagination */
+.pagination {
+  gap: 0.25rem;
+}
+
+.page-link {
+  border: 1px solid var(--zedan-border-soft);
+  border-radius: var(--zedan-radius);
+  color: var(--zedan-primary);
+  background-color: var(--zedan-surface);
+  box-shadow: var(--zedan-shadow-sm);
+  padding: 0.5rem 0.9rem;
+  font-weight: 500;
+}
+
+.page-link:hover {
+  background-color: rgba(47, 111, 237, 0.08);
+  color: var(--zedan-primary-dark);
+  border-color: var(--zedan-border-soft);
+}
+
+.page-link:focus {
+  box-shadow: 0 0 0 0.2rem rgba(47, 111, 237, 0.15);
+}
+
+.page-item.active .page-link {
+  background: linear-gradient(135deg, var(--zedan-primary), var(--zedan-primary-dark));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: var(--zedan-shadow-sm);
+}
+
+.page-item.disabled .page-link {
+  background-color: var(--zedan-surface-alt);
+  border-color: var(--zedan-border-soft);
+  color: var(--bs-secondary-color);
+  opacity: 0.6;
+}
+
+[data-bs-theme="dark"] .page-link {
+  background-color: var(--zedan-surface);
+  border-color: #2e3849;
+  color: var(--zedan-primary);
+}
+
+[data-bs-theme="dark"] .page-link:hover {
+  background-color: rgba(111, 154, 239, 0.12);
+}
+
+[data-bs-theme="dark"] .page-item.disabled .page-link {
+  background-color: var(--zedan-surface-alt);
+  border-color: #2e3849;
+}
+
+/* Search bar */
+.input-group-text {
+  background-color: var(--zedan-surface);
+  border: 1px solid var(--zedan-border-soft);
+  color: var(--zedan-primary);
+}
+
+.input-group .form-control {
+  border: 1px solid var(--zedan-border-soft);
+}
+
+/* Fix border-radius: Bootstrap's input-group only rounds the outer
+   corners of the whole group, but since your global --bs-border-radius
+   is already zedan-radius, the icon box and input connect awkwardly
+   unless we make sure only the outer edges are rounded and the shared
+   edge between them is flush */
+.input-group-text {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.input-group .form-control {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.input-group:focus-within .input-group-text {
+  border-color: var(--zedan-primary);
+}
+
+.input-group:focus-within .form-control {
+  box-shadow: none; /* avoid double focus ring, input-group gets the ring instead */
+}
+
+.input-group:focus-within {
+  box-shadow: 0 0 0 0.2rem rgba(47, 111, 237, 0.15);
+  border-radius: var(--zedan-radius);
+}
+
+[data-bs-theme="dark"] .input-group-text {
+  background-color: var(--zedan-surface);
+  border-color: #2e3849;
+  color: var(--zedan-primary);
+}
+
+[data-bs-theme="dark"] .input-group .form-control {
+  border-color: #2e3849;
+}
