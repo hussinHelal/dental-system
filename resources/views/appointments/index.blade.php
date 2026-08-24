@@ -88,15 +88,15 @@
                         <x-modal :id="'viewAppointmentModal'.$appointment->id" :title="__('messages.appointment_details')">
                             <dl class="row mb-0">
                                 <dt class="col-4">{{ __('messages.patient') }}</dt>
-                                <dd class="col-8">{{ $appointment->patient->full_name }} ({{ $appointment->patient->phone }})</dd>
+                                <dd class="col-8">{{ $appointment->patient->full_name }} - {{ $appointment->patient->phone?? __('messages.no_phone') }}</dd>
                                 <dt class="col-4">{{ __('messages.doctor') }}</dt>
                                 <dd class="col-8">{{ $appointment->doctor->name }}</dd>
                                 <dt class="col-4">{{ __('messages.room') }}</dt>
                                 <dd class="col-8">{{ $appointment->room->name }}</dd>
                                 <dt class="col-4">{{ __('messages.treatment') }}</dt>
-                                <dd class="col-8">{{ $appointment->treatment?->name ?? '-' }}</dd>
+                                <dd class="col-8">{{ $appointment->treatment?->name ?? __('messages.no_treatment') }}</dd>
                                 <dt class="col-4">{{ __('messages.notes') }}</dt>
-                                <dd class="col-8">{{ $appointment->notes ?: '-' }}</dd>
+                                <dd class="col-8">{{ $appointment->notes ?? __('messages.no_notes') }}</dd>
                             </dl>
                             <hr>
                             @can('update', $appointment)
@@ -134,7 +134,7 @@
     </div>
 
     @can('create', \App\Models\Appointment::class)
-        <x-modal id="createAppointmentModal" :title="__('messages.book_appointment')" size="lg" data-availability-url="{{ route('appointments.availability') }}">
+        <x-modal id="createAppointmentModal" :title="__('messages.book_appointment')" size="lg" data-availability-url="{{ route('appointments.availability') }}" data-random-patient-url="{{ route('appointments.random-patient') }}">
             <form data-ajax-form method="POST" action="{{ route('appointments.store') }}">
                 @csrf
                 <div class="row">
@@ -151,6 +151,10 @@
                         <div id="appointmentPatientResults"
                              class="list-group position-absolute w-100 shadow-sm"
                              style="z-index: 1060; max-height: 220px; overflow-y: auto; display: none;"></div>
+                        <button type="button"
+                                id="appointmentCreatePatientBtn"
+                                class="btn btn-sm btn-outline-primary mt-2"
+                                style="display: none;"></button>
                         <div class="invalid-feedback">{{ __('messages.select_patient_from_list') }}</div>
                     </div>
                     <div class="col-md-6">
@@ -250,6 +254,31 @@
     </form>
 </x-modal>
 
+<div class="modal fade" id="duplicatePatientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ __('messages.duplicate_patient_title') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="duplicatePatientMessage"></p>
+            </div>
+            <div class="modal-footer flex-column align-items-stretch gap-2">
+                <button type="button" class="btn btn-primary w-100" id="duplicateUseExistingBtn">
+                    <i class="bi bi-person-check"></i> {{ __('messages.use_existing_patient') }}
+                </button>
+                <button type="button" class="btn btn-outline-warning w-100" id="duplicateCreateAnywayBtn">
+                    <i class="bi bi-person-plus"></i> {{ __('messages.create_duplicate_anyway') }}
+                </button>
+                <button type="button" class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">
+                    {{ __('messages.cancel') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+ 
 <!-- rely on the global `data-ajax-form` handler in resources/js/app.js -->
 
 @push('scripts')
@@ -283,10 +312,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('appointmentPatientSearch');
     const hiddenInput = document.getElementById('appointmentPatientId');
     const resultsBox = document.getElementById('appointmentPatientResults');
+    const createBtn = document.getElementById('appointmentCreatePatientBtn');
+    const modalEl = document.getElementById('createAppointmentModal');
     if (!searchInput || !hiddenInput || !resultsBox) return;
+
+    // Read the create-patient endpoint from the modal's own data attribute
+    // (see README step 2) rather than hardcoding a route name here — one
+    // place to fix if the actual route name differs.
+    const randomPatientUrl = modalEl ? modalEl.dataset.randomPatientUrl : null;
+    const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfTokenMeta ? csrfTokenMeta.content : null;
 
     let debounceTimer = null;
     let lastQuery = '';
+    let creatingPatient = false;
 
     function closeResults() {
         resultsBox.style.display = 'none';
@@ -315,11 +354,127 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsBox.style.display = 'block';
     }
 
+    // --- New: "Create new patient" button ---
+
+    function updateCreateButton(query) {
+        if (!createBtn || !randomPatientUrl) return;
+
+        if (creatingPatient) return; // don't fight the "Creating…" state below
+
+        const trimmed = query.trim();
+        if (trimmed.length < 2) {
+            createBtn.style.display = 'none';
+            return;
+        }
+
+        createBtn.textContent = '{!! __('messages.create_new_patient_named') !!}'.replace(':name', trimmed);
+        createBtn.style.display = 'inline-block';
+        createBtn.disabled = false;
+        createBtn.classList.remove('btn-outline-danger');
+        createBtn.classList.add('btn-outline-primary');
+    }
+
+    function selectPatient(id, name) {
+        searchInput.value = name;
+        hiddenInput.value = id;
+        searchInput.classList.remove('is-invalid');
+        closeResults();
+        if (createBtn) createBtn.style.display = 'none';
+    }
+
+    // Guard against this script block's listeners being attached more
+        // than once (e.g. modal/page re-render without a full reload).
+        if (createBtn && !createBtn.dataset.listenerAttached) {
+            createBtn.dataset.listenerAttached = 'true';
+            createBtn.addEventListener('click', function () {
+                performCreate(false);
+            });
+        }
+    
+        const duplicateModalEl = document.getElementById('duplicatePatientModal');
+        const duplicateModal = duplicateModalEl ? new bootstrap.Modal(duplicateModalEl) : null;
+        const duplicateMessageEl = document.getElementById('duplicatePatientMessage');
+        const useExistingBtn = document.getElementById('duplicateUseExistingBtn');
+        const createAnywayBtn = document.getElementById('duplicateCreateAnywayBtn');
+    
+        function performCreate(confirmDuplicate) {
+            if (creatingPatient) return;
+    
+            const name = searchInput.value.trim();
+            if (!name) return;
+    
+            if (!randomPatientUrl) {
+                console.error('appointments.random-patient URL missing — check data-random-patient-url on #createAppointmentModal');
+                return;
+            }
+    
+            creatingPatient = true;
+            createBtn.disabled = true;
+            createBtn.textContent = '{!! __('messages.creating') !!}';
+    
+            fetch(randomPatientUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ full_name: name, confirm_duplicate: confirmDuplicate }),
+            })
+                .then(async res => {
+                    const data = await res.json().catch(() => null);
+    
+                    if (res.status === 409 && data && data.duplicate) {
+                        creatingPatient = false;
+                        createBtn.disabled = false;
+                        createBtn.textContent = '{!! __('messages.create_new_patient_named') !!}'.replace(':name', name);
+    
+                        if (duplicateModal && duplicateMessageEl) {
+                            duplicateMessageEl.textContent = data.message;
+    
+                            // Fresh handlers each time so we always close over
+                            // THIS response's existing_patient, not a stale one.
+                            useExistingBtn.onclick = function () {
+                                duplicateModal.hide();
+                                selectPatient(data.existing_patient.id, data.existing_patient.full_name);
+                            };
+                            createAnywayBtn.onclick = function () {
+                                duplicateModal.hide();
+                                performCreate(true);
+                            };
+    
+                            duplicateModal.show();
+                        }
+                        return;
+                    }
+    
+                    if (!res.ok) throw new Error(`Create patient failed with status ${res.status}`);
+                    if (!data || !data.success || !data.patient) {
+                        throw new Error('Unexpected response creating patient');
+                    }
+    
+                    selectPatient(data.patient.id, data.patient.full_name);
+                })
+                .catch(err => {
+                    console.error('Create patient failed:', err);
+                    creatingPatient = false;
+                    createBtn.disabled = false;
+                    createBtn.textContent = '{!! __('messages.create_patient_failed') !!}';
+                    createBtn.classList.remove('btn-outline-primary');
+                    createBtn.classList.add('btn-outline-danger');
+                    setTimeout(() => updateCreateButton(searchInput.value), 2000);
+                });
+        }
+    // --- Original search logic (unchanged) ---
+
     searchInput.addEventListener('input', function () {
         hiddenInput.value = '';
         searchInput.classList.remove('is-invalid');
         const query = this.value.trim();
         clearTimeout(debounceTimer);
+
+        updateCreateButton(this.value);
 
         if (query.length < 2) {
             closeResults();
@@ -351,13 +506,11 @@ document.addEventListener('DOMContentLoaded', function () {
     resultsBox.addEventListener('click', function (e) {
         const item = e.target.closest('button[data-id]');
         if (!item) return;
-        searchInput.value = item.dataset.name;
-        hiddenInput.value = item.dataset.id;
-        closeResults();
+        selectPatient(item.dataset.id, item.dataset.name);
     });
 
     document.addEventListener('click', function (e) {
-        if (e.target !== searchInput && !resultsBox.contains(e.target)) {
+        if (e.target !== searchInput && !resultsBox.contains(e.target) && e.target !== createBtn) {
             closeResults();
         }
     });

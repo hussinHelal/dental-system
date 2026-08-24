@@ -17,6 +17,7 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, LogsActivity, Notifiable;
 
+    public const ROLE_ADMIN_DOCTOR = 'Admin Doctor';
     public const ROLE_DOCTOR = 'Doctor';
     public const ROLE_RECEPTIONIST = 'Receptionist';
 
@@ -53,12 +54,6 @@ class User extends Authenticatable
         return trim($this->working_hours) ?: __('messages.closed');
     }
 
-    /**
-     * Never log password/remember_token/theme (theme is a UI
-     * preference, not an accountability-relevant change) - name,
-     * username, and is_active (activate/deactivate) are what matter for
-     * a staff-account audit trail.
-     */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -75,12 +70,22 @@ class User extends Authenticatable
 
     public function isDoctor(): bool
     {
-        return $this->hasRole(self::ROLE_DOCTOR);
+        return $this->hasRole([self::ROLE_DOCTOR, self::ROLE_ADMIN_DOCTOR]);
+    }
+
+    public function isAdminDoctor(): bool
+    {
+        return $this->hasRole(self::ROLE_ADMIN_DOCTOR);
     }
 
     public function isReceptionist(): bool
     {
         return $this->hasRole(self::ROLE_RECEPTIONIST);
+    }
+
+    public function getRoleLabelAttribute(): string
+    {
+        return $this->roles->first()?->name ?? __('messages.no_role_assigned');
     }
 
     public function avatarUrl(): string

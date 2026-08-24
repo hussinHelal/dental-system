@@ -18,6 +18,9 @@
             <a href="{{ route('users.create') }}" class="btn btn-primary text-nowrap">
                 <i class="bi bi-person-plus-fill me-2"></i> {{ __('messages.add_staff') }}
             </a>
+            <a href="{{ route('roles.index') }}" class="btn btn-primary text-nowrap">
+                <i class="bi bi-people me-2"></i> {{ __('messages.roles') }}
+            </a>
         </div>
     </div>
 

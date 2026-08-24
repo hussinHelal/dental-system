@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.3",
         "barryvdh/laravel-dompdf": "^3.1",
+        "doctrine/dbal": "^4.4",
         "intervention/image": "^3.5",
         "intervention/image-laravel": "^1.5",
         "laravel/framework": "^12.0",
@@ -53,8 +54,8 @@
             "@php artisan migrate --seed --ansi"
         ],
         "dev": [
-        "Composer\\Config::disableProcessTimeout",
-        "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=3 --backoff=10\" \"npm run dev\" --names=server,queue,vite --kill-others"
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=3 --backoff=10\" \"npm run dev\" --names=server,queue,vite --kill-others"
          ],
         "test": [
             "@php artisan config:clear --ansi",

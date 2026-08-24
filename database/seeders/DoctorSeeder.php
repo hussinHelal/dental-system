@@ -17,17 +17,15 @@ class DoctorSeeder extends Seeder
             [
                 'user_id' => $adminUser?->id,
                 'specialty' => 'General & Cosmetic Dentistry',
-                'phone' => '+20 100 123 4567',
                 'is_active' => true,
             ]
         );
 
         Doctor::firstOrCreate(
-            ['name' => 'Dr. Karim Fathy'],
+            ['name' => 'Dr. Maryem Awaga'],
             [
                 'user_id' => null,
-                'specialty' => 'Orthodontics',
-                'phone' => '+20 100 765 4321',
+                'specialty' => 'General & Cosmetic Dentistry',
                 'is_active' => true,
             ]
         );

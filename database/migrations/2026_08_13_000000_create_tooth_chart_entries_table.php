@@ -17,9 +17,6 @@ return new class extends Migration
             $table->foreignId('recorded_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
 
-            // One current-state row per tooth per patient — updates overwrite it
-            // (see ToothChartController::update). This also gives SQLite the
-            // patient_id index it wouldn't otherwise create automatically.
             $table->unique(['patient_id', 'tooth_number']);
         });
     }

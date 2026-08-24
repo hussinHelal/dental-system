@@ -259,15 +259,39 @@ class AppointmentController extends Controller
     public function randomPatient(Request $request)
     {
         $this->authorize('create', Patient::class);
-
+    
         $validated = $request->validate([
-            'full_name' => ['required','string','max:150'],
+            'full_name' => ['required', 'string', 'max:150'],
+            'confirm_duplicate' => ['nullable', 'boolean'],
         ]);
-
-        $validated['created_by'] = $request->user()->id;
-
-        $patient = Patient::create($validated);
-
+    
+        $fullName = trim($validated['full_name']);
+    
+        // بحث دقيق عن الاسم باللغة العربية والإنجليزية مع تجاهل المسافات الزائدة
+        $existing = Patient::where('full_name', $fullName)
+            ->select('id', 'full_name', 'phone')
+            ->first();
+    
+        // التحقق من وجود مريض بنفس الاسم تماماً
+        if ($existing && ! $request->boolean('confirm_duplicate')) {
+            return response()->json([
+                'success' => false,
+                'duplicate' => true,
+                'existing_patient' => [
+                    'id' => $existing->id,
+                    'full_name' => $existing->full_name,
+                    'phone' => $existing->phone,
+                ],
+                'message' => __('messages.patient_duplicate_warning', ['name' => $existing->full_name]),
+            ], 409);
+        }
+    
+        // إنشاء المريض الجديد
+        $patient = Patient::create([
+            'full_name' => $fullName,
+            'created_by' => $request->user()->id,
+        ]);
+    
         return response()->json([
             'success' => true,
             'patient' => [
@@ -277,7 +301,6 @@ class AppointmentController extends Controller
             ],
             'message' => __('messages.patient_created'),
         ]);
-        
     }
 
 }

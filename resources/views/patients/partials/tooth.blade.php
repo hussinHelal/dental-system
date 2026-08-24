@@ -1,18 +1,14 @@
 @php
 $status = $record?->status ?? 'healthy';
 $classes = "tooth-wrapper {$status}";
-if(request()->query('selected') == $number) $classes .= ' selected';
 @endphp
-
 <div class="{{ $classes }}"
     data-tooth="{{ $number }}"
     data-label="{{ $label ?? $number }}"
      data-status="{{ $status }}"
      data-treatment="{{ $record?->treatment_id ?? '' }}"
      data-notes="{{ $record?->notes ?? '' }}"
-
     title="{{ __('messages.tooth') }} {{ $label ?? $number }} — {{ __('messages.status_'.$status) }}">
-
     <svg class="tooth-svg" viewBox="0 0 40 52" xmlns="http://www.w3.org/2000/svg">
         <!-- Realistic tooth shape -->
         <path d="M20 2 
@@ -39,33 +35,27 @@ if(request()->query('selected') == $number) $classes .= ' selected';
                   fill="none"
                   opacity="0.5"/>
         @endif
-
         <!-- Crown indicator -->
         @if($status === 'crown')
             <ellipse cx="20" cy="16" rx="10" ry="8" fill="none" stroke="#ff9800" stroke-width="1.5" opacity="0.6"/>
         @endif
-
         <!-- Root canal indicator -->
         @if($status === 'root_canal')
             <line x1="20" y1="10" x2="20" y2="45" stroke="#03a9f4" stroke-width="1.5" stroke-dasharray="3,2"/>
         @endif
-
         <!-- Extraction X mark -->
         @if($status === 'extracted')
             <line x1="10" y1="10" x2="30" y2="40" stroke="#666" stroke-width="2"/>
             <line x1="30" y1="10" x2="10" y2="40" stroke="#666" stroke-width="2"/>
         @endif
-
         <!-- Fracture line -->
         @if($status === 'fractured')
             <path d="M8 20 L15 25 L12 32 L20 35" stroke="#c62828" stroke-width="1.5" fill="none"/>
         @endif
-
         <!-- Abscess dot -->
         @if($status === 'abscess')
             <circle cx="20" cy="45" r="3" fill="#ad1457" opacity="0.7"/>
         @endif
-
         <!-- Braces bracket -->
         @if($status === 'braces')
             <rect x="8" y="18" width="24" height="6" rx="2" fill="none" stroke="#3f51b5" stroke-width="1.5"/>

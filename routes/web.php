@@ -24,6 +24,9 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\FinancialTransactionController;
+use App\Http\Controllers\ToothChartBulkController;
+use App\Http\Controllers\RoleController;
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -51,7 +54,7 @@ Route::middleware('auth')->group(function () {
     // Doctors - view for both roles, mutations Doctor-only (policy +
     // route middleware, belt and braces).
     Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
-    Route::middleware('role:Doctor')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor|Admin Doctor')->group(function () {
         Route::post('/doctors', [DoctorController::class, 'store'])->name('doctors.store');
         Route::put('/doctors/{doctor}', [DoctorController::class, 'update'])->name('doctors.update');
         Route::delete('/doctors/{doctor}', [DoctorController::class, 'destroy'])->name('doctors.destroy');
@@ -60,7 +63,7 @@ Route::middleware('auth')->group(function () {
 
     // Rooms - same pattern as Doctors.
     Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
-    Route::middleware('role:Doctor')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor')->group(function () {
         Route::post('/rooms', [RoomController::class, 'store'])->name('rooms.store');
         Route::put('/rooms/{room}', [RoomController::class, 'update'])->name('rooms.update');
         Route::delete('/rooms/{room}', [RoomController::class, 'destroy'])->name('rooms.destroy');
@@ -71,7 +74,7 @@ Route::middleware('auth')->group(function () {
     // catalog edits Doctor-only.
     Route::get('/treatments', [TreatmentController::class, 'index'])->name('treatments.index');
     Route::get('/treatments/{treatment}', [TreatmentController::class, 'show'])->name('treatments.show');
-    Route::middleware('role:Doctor')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor')->group(function () {
         Route::post('/treatments', [TreatmentController::class, 'store'])->name('treatments.store');
         Route::put('/treatments/{treatment}', [TreatmentController::class, 'update'])->name('treatments.update');
         Route::delete('/treatments/{treatment}', [TreatmentController::class, 'destroy'])->name('treatments.destroy');
@@ -85,7 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
     Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
     Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
-    Route::middleware('role:Doctor')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor')->group(function () {
         Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
     });
     Route::resource('patients', PatientController::class);
@@ -97,7 +100,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
     Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
     Route::put('/appointments/{appointment}', [AppointmentController::class, 'update'])->name('appointments.update');
-    Route::middleware('role:Doctor')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor')->group(function () {
         Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
     });
     Route::post('/appointments/quick-patient', [AppointmentController::class, 'quickPatient'])
@@ -110,21 +113,21 @@ Route::middleware('auth')->group(function () {
     // payments/installments but never deletes history.
     Route::post('/patients/{patient}/payments', [PaymentController::class, 'store'])->name('payments.store');
     Route::post('/payments/{payment}/installments', [PaymentController::class, 'addInstallment'])->name('payments.installments.store');
-    Route::middleware('role:Doctor')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor')->group(function () {
         Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
     });
-
+    
     // Inventory - Receptionist may only adjust quantity.
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
     Route::post('/inventory/{item}/quantity', [InventoryController::class, 'updateQuantity'])->name('inventory.quantity');
-    Route::middleware('role:Doctor')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor')->group(function () {
         Route::post('/inventory', [InventoryController::class, 'store'])->name('inventory.store');
         Route::put('/inventory/{item}', [InventoryController::class, 'update'])->name('inventory.update');
         Route::delete('/inventory/{item}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
     });
 
     // User Management - Doctor only, full page (not a modal).
-    Route::middleware('role:Doctor')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor')->group(function () {
         Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserManagementController::class, 'create'])->name('users.create');
         Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
@@ -136,14 +139,14 @@ Route::middleware('auth')->group(function () {
     // Backups - Receptionist may view/download history only.
     Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
     Route::get('/backups/{backup}/download', [BackupController::class, 'download'])->name('backups.download');
-    Route::middleware('role:Doctor')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor')->group(function () {
         Route::post('/backups', [BackupController::class, 'store'])->name('backups.store');
         Route::post('/backups/import', [BackupController::class, 'import'])->name('backups.import');
         Route::delete('/backups/{backup}', [BackupController::class, 'destroy'])->name('backups.destroy');
     });
 
     // Activity log - Doctor only, sensitive audit data.
-    Route::middleware('role:Doctor')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor')->group(function () {
         Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
     });
 
@@ -155,43 +158,53 @@ Route::middleware('auth')->group(function () {
     ->name('patients.lookup');
     Route::get('/lab-cases/patient-lookup', [LabCaseController::class, 'patientLookup'])
     ->name('lab-cases.patient-lookup');
-    
+
     // Procurement: Doctors and Receptionists can work with records; only Doctors delete.
-    Route::middleware('role:Doctor|Receptionist')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor|Receptionist')->group(function () {
         Route::resource('suppliers', SupplierController::class)->except(['show', 'create', 'edit', 'destroy']);
         Route::resource('purchases', PurchaseController::class)->except(['show', 'create', 'edit', 'destroy']);
-        Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->middleware('role:Doctor')->name('suppliers.destroy');
-        Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy'])->middleware('role:Doctor')->name('purchases.destroy');
+        Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->middleware('role:Doctor|Admin Doctor')->name('suppliers.destroy');
+        Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy'])->middleware('role:Doctor|Admin Doctor')->name('purchases.destroy');
 
         Route::resource('dental-labs', DentalLabController::class)
             ->except(['show', 'create', 'edit', 'destroy'])
             ->parameters(['dental-labs' => 'dentalLab']);
-            
+
         Route::resource('lab-cases', LabCaseController::class)
             ->except(['show', 'create', 'edit', 'destroy'])
             ->parameters(['lab-cases' => 'labCase']);
 
-        Route::delete('/dental-labs/{dentalLab}', [DentalLabController::class, 'destroy'])->middleware('role:Doctor')->name('dental-labs.destroy');
-        Route::delete('/lab-cases/{labCase}', [LabCaseController::class, 'destroy'])->middleware('role:Doctor')->name('lab-cases.destroy');
+        Route::delete('/dental-labs/{dentalLab}', [DentalLabController::class, 'destroy'])->middleware('role:Doctor|Admin Doctor')->name('dental-labs.destroy');
+        Route::delete('/lab-cases/{labCase}', [LabCaseController::class, 'destroy'])->middleware('role:Doctor|Admin Doctor')->name('lab-cases.destroy');
         Route::get('/lab-cases/patient-lookup', [LabCaseController::class, 'patientLookup'])->name('lab-cases.patient-lookup');
     });
 
-    Route::middleware('role:Doctor')->group(function () {
+    Route::middleware('role:Doctor|Admin Doctor')->group(function () {
         Route::resource('assets', AssetController::class)->except(['show', 'create', 'edit']);
         Route::resource('insurance', InsuranceContractController::class)
             ->except(['show', 'create', 'edit'])
             ->parameters(['insurance' => 'insurance']);
         Route::resource('employees', EmployeeController::class)->except(['show', 'create', 'edit']);
-
-           Route::resource('finance', FinancialTransactionController::class)
+        Route::resource('finance', FinancialTransactionController::class)
             ->except(['show', 'create', 'edit'])
             ->parameters(['finance' => 'transaction']);
-            
+
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.export-excel');
         Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
     });
-    
-    
-    
+
+
+    Route::resource('roles', RoleController::class)
+        ->except(['show'])
+        ->names('roles');
+
+    Route::post('patients/{patient}/tooth-chart/bulk-apply', [\App\Http\Controllers\ToothChartController::class, 'bulkApply'])
+        ->name('patients.tooth-chart.bulk-apply');
+
+    Route::post('patients/{patient}/tooth-chart/bulk-reset', [\App\Http\Controllers\ToothChartController::class, 'bulkReset'])
+        ->name('patients.tooth-chart.bulk-reset');
+
+    Route::post('/appointments/random-patient', [AppointmentController::class, 'randomPatient'])
+            ->name('appointments.random-patient');  
 });

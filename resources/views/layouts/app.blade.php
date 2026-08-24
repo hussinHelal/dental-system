@@ -111,35 +111,9 @@
         ['route' => 'insurance.index',  'icon' => 'bi-shield-check', 'label' => __('dental_navigation.insurance'), ],
         ['route' => 'reports.index', 'icon' => 'bi-bar-chart-line', 'label' => __('dental_navigation.reports'), ],
         ['route' => 'backups.index', 'icon' => 'bi-cloud-arrow-down', 'label' => __('messages.backups')],
-
-// Keep Employees inside the existing Doctor-only condition.
-// [
-//     'route' => 'employees.index',
-//     'icon' => 'bi-person-vcard',
-//     'label' => __('dental_navigation.employees'),
-// ],
-    ];
-
-    if (auth()->user()->isDoctor()) {
-        // $navItems[] = [
-        //     'route' => 'employees.index',
-        //     'icon' => 'bi-person-vcard',
-        //     'label' => __('dental_navigation.employees'),
-        // ];
-
-        $navItems[] = [
-            'route' => 'users.index',
-            'icon' => 'bi-person-gear',
-            'label' => __('messages.staff'),
-        ];
-
-        $navItems[] = [
-            'route' => 'activity-log.index',
-            'icon' => 'bi-clock-history',
-            'label' => __('messages.activity_log'),
-        ];
-        
-    }
+        ['route' => 'users.index', 'icon' => 'bi-person-gear', 'label' => __('messages.staff')],
+        ['route' => 'activity-log.index', 'icon' => 'bi-clock-history', 'label' => __('messages.activity_log')],
+    ]
 @endphp
 
         <div class="offcanvas-lg offcanvas-start zedan-sidebar p-3" tabindex="-1" id="zedanSidebar">
@@ -198,6 +172,5 @@
             </div>
         </div>
     </div>
-    @stack('scripts')
 </body>
 </html>

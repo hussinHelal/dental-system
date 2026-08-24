@@ -2,3 +2,32 @@
 @import "bootstrap-icons/font/bootstrap-icons.css";
 @import '@fortawesome/fontawesome-free/css/all.min.css';
 @import "./theme.css";
+
+/* Error pages (403/404/405/419/429/500/503) */
+.zedan-error-body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.zedan-error-main {
+    flex: 1;
+    padding: 2rem 1rem;
+}
+
+.zedan-error-card {
+    max-width: 480px;
+    width: 100%;
+}
+
+.zedan-error-code {
+    font-size: 5.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--bs-primary);
+    margin-bottom: 0.5rem;
+}
+
+[data-bs-theme="dark"] .zedan-error-code {
+    opacity: 0.9;
+}

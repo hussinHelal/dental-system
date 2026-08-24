@@ -16,11 +16,14 @@
                     </ul>
                 </div>
             @endif
-
             <div class="text-center mb-3">
                 <img src="{{ $user->avatarUrl() }}" width="80" height="80" class="rounded-circle" alt="{{ $user->name }}" data-image-preview style="cursor: pointer;">
+                <div class="mt-2">
+                    <span class="badge text-bg-{{ $user->isAdminDoctor() ? 'primary' : ($user->isDoctor() ? 'info' : 'secondary') }}">
+                        {{ $user->role_label }}
+                    </span>
+                </div>
             </div>
-
             <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
                 @csrf @method('PUT')
                 <x-form-input name="name" :label="__('messages.name')" :value="$user->name" required />

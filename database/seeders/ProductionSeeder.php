@@ -25,7 +25,7 @@ class ProductionSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::firstOrCreate(['name' => User::ROLE_DOCTOR, 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => User::ROLE_ADMIN_DOCTOR, 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => User::ROLE_RECEPTIONIST, 'guard_name' => 'web']);
 
         if (User::count() > 0) {

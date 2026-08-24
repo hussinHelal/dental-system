@@ -11,13 +11,10 @@ return new class extends Migration
         Schema::create('patients', function (Blueprint $table) {
             $table->id();
             $table->string('full_name');
-            // Duplicate-checked in the Form Request, not a hard unique
-            // constraint, so a mistyped digit can still be corrected
-            // via normal validation messaging rather than a DB error.
-            $table->string('phone')->index();
+            $table->string('phone')->index()->nullable();
             $table->date('date_of_birth')->nullable();
             $table->unsignedTinyInteger('age')->nullable();
-            $table->text('address')->nullable();
+            $table->text('address')->nullable()->nullable();
             $table->enum('gender', ['male', 'female'])->nullable();
             $table->text('notes')->nullable();
             $table->string('photo')->nullable();
