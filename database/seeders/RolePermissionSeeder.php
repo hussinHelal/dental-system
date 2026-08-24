@@ -24,9 +24,21 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->seedPermissionsAndRoles();
+        $this->seedDefaultUsers();
+    }
+
+    /**
+     * Just the permissions + role definitions, with no demo user
+     * creation. Exposed publicly so ProductionSeeder (the lean,
+     * demo-free path used for packaged/production first launch) can
+     * reuse this single source of truth instead of duplicating it or
+     * leaving roles without their permission grants.
+     */
+    public function seedPermissionsAndRoles(): void
+    {
         $this->seedPermissions();
         $this->seedRoles();
-        $this->seedDefaultUsers();
     }
 
     /**

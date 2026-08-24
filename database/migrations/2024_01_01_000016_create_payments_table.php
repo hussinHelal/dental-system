@@ -26,6 +26,7 @@ return new class extends Migration
                 ->constrained('users')->nullOnDelete();
             $table->index(['patient_id', 'status']);
             $table->index('payment_date');
+            $table->index('status');
             $table->timestamps();
         });
     }
@@ -33,9 +34,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('payments');
-        Schema::table('payments', function (Blueprint $table) {
-            $table->dropIndex(['patient_id', 'status']);
-            $table->dropIndex(['payment_date']);
-        });
     }
 };

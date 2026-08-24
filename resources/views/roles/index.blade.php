@@ -2,9 +2,17 @@
 
 @section('content')
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">{{ __('Roles & Permissions') }}</h1>
-        <a href="{{ route('roles.create') }}" class="btn btn-primary">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 shadow-sm p-3 rounded-4 zedan-page-header">
+        <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle bg-primary-subtle p-2">
+                <i class="bi bi-shield-lock-fill text-primary"></i>
+            </div>
+            <div>
+                <h3 class="mb-0">{{ __('Roles & Permissions') }}</h3>
+                <p class="text-muted small mb-0">{{ __('Control what each role can view and manage across the app.') }}</p>
+            </div>
+        </div>
+        <a href="{{ route('roles.create') }}" class="btn btn-primary text-nowrap">
             <i class="bi bi-plus-lg me-1"></i> {{ __('New Role') }}
         </a>
     </div>
@@ -89,7 +97,7 @@
                                                 {{ __('Are you sure you want to delete the ":role" role? This cannot be undone.', ['role' => $role->name]) }}
                                             </p>
                                             <x-slot name="footer">
-                                                <form action="{{ route('roles.destroy', $role) }}" method="POST">
+                                                <form action="{{ route('roles.destroy', $role) }}" method="POST" class="m-0 w-100 d-flex justify-content-end gap-2">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>

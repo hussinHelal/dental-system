@@ -46,10 +46,34 @@
 }
 
 [data-bs-theme="dark"] .card,
-[data-bs-theme="dark"] .zedan-card,
-[data-bs-theme="dark"] .zedan-stat-card {
+[data-bs-theme="dark"] .zedan-card {
   background-color: #232c3d;
   border: 1px solid #2e3849;
+}
+
+[data-bs-theme="dark"] .zedan-stat-card {
+  background: linear-gradient(135deg, #26314480, #1f2836);
+  border: 1px solid #2e3849;
+}
+
+/* Bootstrap's `.table-light` / `.table-dark` variants are fixed,
+   theme-independent semantic colors by design (like `.btn-light`), so
+   they don't automatically flip with [data-bs-theme]. Without this,
+   a `.table-light` header stays a bright, out-of-place rectangle on a
+   dark card. This keeps it a clearly "light-ish" accent header while
+   still matching the app's dark palette instead of pure Bootstrap gray. */
+[data-bs-theme="dark"] .table-light {
+  --bs-table-bg: #2a3448;
+  --bs-table-striped-bg: #2f3a4f;
+  --bs-table-striped-color: #dbe2ee;
+  --bs-table-active-bg: #333f56;
+  --bs-table-active-color: #dbe2ee;
+  --bs-table-hover-bg: #303c52;
+  --bs-table-hover-color: #dbe2ee;
+  --bs-table-color: #dbe2ee;
+  --bs-table-border-color: #3a4560;
+  color: #dbe2ee;
+  border-color: #3a4560;
 }
 
 body {
@@ -143,7 +167,7 @@ body {
 }
 
 .zedan-page-header {
-  background: linear-gradient(135deg, rgba(47, 111, 237, 0.12), rgba(94, 198, 192, 0.15));
+  background: linear-gradient(135deg, rgba(47, 111, 237, 0.16), rgba(94, 198, 192, 0.20));
   border: 1px solid var(--zedan-border-soft);
   border-radius: 1rem;
   position: relative;
@@ -158,10 +182,14 @@ body {
   pointer-events: none;
 }
 
-.zedan-page-header h3,
-.zedan-page-header p,
-.zedan-page-header .text-muted {
-  opacity: 0.9;
+
+[data-bs-theme="dark"] .zedan-page-header {
+  background: linear-gradient(135deg, rgba(111, 154, 239, 0.22), rgba(94, 198, 192, 0.14));
+  border-color: var(--zedan-border-soft);
+}
+
+[data-bs-theme="dark"] .zedan-page-header::before {
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.06), transparent 55%);
 }
 
 .btn-primary {

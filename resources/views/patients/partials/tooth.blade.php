@@ -1,6 +1,7 @@
 @php
 $status = $record?->status ?? 'healthy';
-$classes = "tooth-wrapper {$status}";
+$hasBraces = str_contains((string) ($record?->notes ?? ''), '[braces]');
+$classes = 'tooth-wrapper '.$status.($hasBraces ? ' has-braces' : '');
 @endphp
 <div class="{{ $classes }}"
     data-tooth="{{ $number }}"
@@ -8,7 +9,7 @@ $classes = "tooth-wrapper {$status}";
      data-status="{{ $status }}"
      data-treatment="{{ $record?->treatment_id ?? '' }}"
      data-notes="{{ $record?->notes ?? '' }}"
-    title="{{ __('messages.tooth') }} {{ $label ?? $number }} — {{ __('messages.status_'.$status) }}">
+    title="{{ __('messages.tooth') }} {{ $label ?? $number }} — {{ __('messages.status_'.$status) }}{{ $hasBraces ? ' + ' . __('messages.status_braces') : '' }}">
     <svg class="tooth-svg" viewBox="0 0 40 52" xmlns="http://www.w3.org/2000/svg">
         <!-- Realistic tooth shape -->
         <path d="M20 2 
@@ -57,7 +58,7 @@ $classes = "tooth-wrapper {$status}";
             <circle cx="20" cy="45" r="3" fill="#ad1457" opacity="0.7"/>
         @endif
         <!-- Braces bracket -->
-        @if($status === 'braces')
+        @if($status === 'braces' || $hasBraces)
             <rect x="8" y="18" width="24" height="6" rx="2" fill="none" stroke="#3f51b5" stroke-width="1.5"/>
             <line x1="14" y1="18" x2="14" y2="24" stroke="#3f51b5" stroke-width="1"/>
             <line x1="20" y1="18" x2="20" y2="24" stroke="#3f51b5" stroke-width="1"/>

@@ -5,17 +5,21 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
 use Illuminate\Support\Str;
 
 class ProductionSeeder extends Seeder
 {
     /**
-     * Creates just the two roles and one Doctor/admin login - no demo
-     * doctors, rooms, patients, treatments, inventory, appointments, or
-     * payments. Intended for a real clinic's first launch (e.g. a
-     * packaged NativePHP desktop build), where DatabaseSeeder's demo
-     * data would be wrong to ship.
+     * Creates the full permission/role set (via RolePermissionSeeder's
+     * shared seedPermissionsAndRoles(), with no demo user) plus one
+     * admin login - no demo doctors, rooms, patients, treatments,
+     * inventory, appointments, or payments. Intended for a real
+     * clinic's first launch (e.g. a packaged NativePHP desktop build),
+     * where DatabaseSeeder's demo data would be wrong to ship.
+     *
+     * The first-launch admin is granted Admin Doctor (not Doctor):
+     * on a brand-new install there is no one else who could later
+     * grant "manage roles" to them, so they need to start with it.
      *
      * The admin username/password come from .env so every deployment
      * doesn't share the same hardcoded default credentials. If unset,
@@ -25,8 +29,13 @@ class ProductionSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::firstOrCreate(['name' => User::ROLE_ADMIN_DOCTOR, 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => User::ROLE_RECEPTIONIST, 'guard_name' => 'web']);
+        // Creates Admin Doctor / Doctor / Receptionist / Assistant with
+        // their full permission grants - previously this seeder only
+        // created two bare role rows with zero permissions attached,
+        // and assigned a "Doctor" role that this seeder never created,
+        // which threw on every packaged first-launch and left the
+        // admin account with no role at all.
+        (new RolePermissionSeeder())->seedPermissionsAndRoles();
 
         if (User::count() > 0) {
             return;
@@ -47,7 +56,7 @@ class ProductionSeeder extends Seeder
             'password' => Hash::make($password),
             'is_active' => true,
         ]);
-        $admin->assignRole(User::ROLE_DOCTOR);
+        $admin->assignRole(User::ROLE_ADMIN_DOCTOR);
 
         if ($generatedPassword) {
             logger()->warning(

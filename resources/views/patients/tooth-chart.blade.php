@@ -16,11 +16,20 @@
 
     <div class="row">
         <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-transparent d-flex justify-content-end">
-                    <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllToggleBtn">
-                        <i class="bi bi-check-all"></i> {{ __('messages.select_all') }}
-                    </button>
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h5 class="mb-0"><i class="bi bi-grid-3x3-gap"></i> {{ __('messages.tooth_chart') }}</h5>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="selectUpperArchBtn">
+                            <i class="bi bi-arrow-up-circle"></i> {{ __('messages.upper_arch') ?? 'الفك العلوي' }}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="selectLowerArchBtn">
+                            <i class="bi bi-arrow-down-circle"></i> {{ __('messages.lower_arch') ?? 'الفك السفلي' }}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="selectAllToggleBtn">
+                            <i class="bi bi-check-all"></i> {{ __('messages.select_all') }}
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body p-4">
                     <div class="tooth-chart-container">
@@ -83,6 +92,16 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>{{ __('messages.tooth_history') }}</h6>
+                    <span class="text-muted small">{{ __('messages.all_tooth_history') }}</span>
+                </div>
+                <div class="card-body" id="toothHistoryContainer">
+                    @include('patients.partials.tooth-history-list', ['toothHistory' => $toothHistory])
                 </div>
             </div>
         </div>
@@ -161,15 +180,28 @@
                         <div class="form-text" id="toothNotesMultiHint" style="display: none;">
                             {{ __('messages.notes_multi_hint') }}
                         </div>
+                        <div class="form-text text-primary" id="bracesHint" style="display: none;">
+                            {{ __('messages.braces_bulk_preserves_existing_status') }}
+                        </div>
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-primary flex-fill" id="applyBtn">
-                            <i class="bi bi-check-lg"></i> {{ __('messages.apply') }}
-                        </button>
-                        <button type="button" class="btn btn-outline-danger" id="resetSelectionBtn" title="{{ __('messages.reset') }}">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </button>
+                    <div class="d-grid gap-2">
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary flex-fill" id="applyBtn">
+                                <i class="bi bi-check-lg"></i> {{ __('messages.apply') }}
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" id="resetSelectionBtn" title="{{ __('messages.reset') }}">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-primary flex-fill" id="applyBracesBtn">
+                                <i class="bi bi-plus-square"></i> {{ __('messages.apply_braces') }}
+                            </button>
+                            <button type="button" class="btn btn-outline-warning flex-fill" id="removeBracesBtn">
+                                <i class="bi bi-dash-square"></i> {{ __('messages.remove_braces') }}
+                            </button>
+                        </div>
                     </div>
 
                     <div id="toothActionFeedback" class="small mt-2" role="status" aria-live="polite"></div>
@@ -284,7 +316,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
-    const toothWrappers = Array.from(document.querySelectorAll('.tooth-wrapper'));
+    function toothWrappers() {
+        return Array.from(document.querySelectorAll('.tooth-wrapper'));
+    }
     const infoCard = document.getElementById('toothInfoCard');
     const titleEl = document.getElementById('toothInfoTitle');
     const summaryEl = document.getElementById('selectedTeethSummary');
@@ -294,8 +328,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const notesMultiHint = document.getElementById('toothNotesMultiHint');
     const applyBtn = document.getElementById('applyBtn');
     const resetBtn = document.getElementById('resetSelectionBtn');
+    const applyBracesBtn = document.getElementById('applyBracesBtn');
+    const removeBracesBtn = document.getElementById('removeBracesBtn');
     const clearBtn = document.getElementById('clearSelectionBtn');
     const selectAllToggleBtn = document.getElementById('selectAllToggleBtn');
+    const selectUpperArchBtn = document.getElementById('selectUpperArchBtn');
+    const selectLowerArchBtn = document.getElementById('selectLowerArchBtn');
+    const bracesHint = document.getElementById('bracesHint');
     const feedback = document.getElementById('toothActionFeedback');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
@@ -312,21 +351,50 @@ document.addEventListener('DOMContentLoaded', () => {
         return document.querySelector('.tooth-wrapper[data-tooth="' + num + '"]');
     }
 
+    function upperArchNumbers() {
+        return toothWrappers()
+            .filter(wrapper => parseInt(wrapper.dataset.tooth, 10) <= 16)
+            .map(wrapper => parseInt(wrapper.dataset.tooth, 10));
+    }
+
+    function lowerArchNumbers() {
+        return toothWrappers()
+            .filter(wrapper => parseInt(wrapper.dataset.tooth, 10) >= 17)
+            .map(wrapper => parseInt(wrapper.dataset.tooth, 10));
+    }
+
+    function updateBracesHint() {
+        if (!bracesHint) return;
+        bracesHint.style.display = statusSelect.value === 'braces' ? 'block' : 'none';
+    }
+
+    function allNumbersSelected(numbers) {
+        return numbers.length > 0 && numbers.every(num => selected.has(num));
+    }
+
     function syncToothVisuals() {
-        toothWrappers.forEach(wrapper => {
+        const wrappers = toothWrappers();
+
+        wrappers.forEach(wrapper => {
             const num = parseInt(wrapper.dataset.tooth, 10);
             wrapper.classList.toggle('selected', selected.has(num));
         });
 
-        // Toggle button reflects and drives whole-chart selection: label
-        // reads "Select All" when anything is still unselected, and
-        // switches to "Deselect All" only once every tooth on the chart
-        // is selected — so clicking it always does the "more useful next
-        // action" rather than a fixed action regardless of state.
-        const allSelected = toothWrappers.length > 0 && selected.size === toothWrappers.length;
+        const allSelected = wrappers.length > 0 && selected.size === wrappers.length;
+        const upperSelected = allNumbersSelected(upperArchNumbers());
+        const lowerSelected = allNumbersSelected(lowerArchNumbers());
+
         selectAllToggleBtn.innerHTML = allSelected
             ? '<i class="bi bi-x-square"></i> {{ __('messages.deselect_all') }}'
             : '<i class="bi bi-check-all"></i> {{ __('messages.select_all') }}';
+
+        selectUpperArchBtn.innerHTML = upperSelected
+            ? '<i class="bi bi-arrow-up-circle"></i> {{ __('messages.deselect_upper_arch') ?? 'إلغاء تحديد الفك العلوي' }}'
+            : '<i class="bi bi-arrow-up-circle"></i> {{ __('messages.upper_arch') ?? 'الفك العلوي' }}';
+
+        selectLowerArchBtn.innerHTML = lowerSelected
+            ? '<i class="bi bi-arrow-down-circle"></i> {{ __('messages.deselect_lower_arch') ?? 'إلغاء تحديد الفك السفلي' }}'
+            : '<i class="bi bi-arrow-down-circle"></i> {{ __('messages.lower_arch') ?? 'الفك السفلي' }}';
     }
 
     // Prefill the form to match the selection:
@@ -357,6 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
             treatmentSelect.value = wrapper?.dataset.treatment || '';
             notesInput.value = wrapper?.dataset.notes || '';
             notesMultiHint.style.display = 'none';
+            updateBracesHint();
         } else {
             titleEl.textContent = '{{ __('messages.bulk_treatment') }}';
             summaryEl.style.display = 'block';
@@ -374,6 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
             treatmentSelect.value = '';
             notesInput.value = '';
             notesMultiHint.style.display = 'block';
+            updateBracesHint();
         }
 
         feedback.textContent = '';
@@ -390,29 +460,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function clearSelection() {
-        selected.clear();
+        selected = new Set();
         syncToothVisuals();
         refreshPanel();
     }
 
     function selectAll() {
-        toothWrappers.forEach(wrapper => {
+        toothWrappers().forEach(wrapper => {
             selected.add(parseInt(wrapper.dataset.tooth, 10));
         });
         syncToothVisuals();
         refreshPanel();
     }
 
-    toothWrappers.forEach(wrapper => {
-        wrapper.addEventListener('click', () => {
-            toggleTooth(parseInt(wrapper.dataset.tooth, 10));
+    function toggleArch(numbers) {
+        const shouldDeselect = allNumbersSelected(numbers);
+
+        numbers.forEach(num => {
+            if (shouldDeselect) {
+                selected.delete(num);
+            } else {
+                selected.add(num);
+            }
         });
+
+        syncToothVisuals();
+        refreshPanel();
+    }
+
+    document.addEventListener('click', (event) => {
+        const wrapper = event.target.closest('.tooth-wrapper');
+        if (!wrapper) return;
+        toggleTooth(parseInt(wrapper.dataset.tooth, 10));
     });
 
     clearBtn.addEventListener('click', clearSelection);
 
     selectAllToggleBtn.addEventListener('click', () => {
-        const allSelected = toothWrappers.length > 0 && selected.size === toothWrappers.length;
+        const wrappers = toothWrappers();
+        const allSelected = wrappers.length > 0 && selected.size === wrappers.length;
         if (allSelected) {
             clearSelection();
         } else {
@@ -420,9 +506,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    selectUpperArchBtn.addEventListener('click', () => {
+        toggleArch(upperArchNumbers());
+    });
+
+    selectLowerArchBtn.addEventListener('click', () => {
+        toggleArch(lowerArchNumbers());
+    });
+
+    statusSelect.addEventListener('change', updateBracesHint);
+
     function setBusy(busy) {
         applyBtn.disabled = busy;
         resetBtn.disabled = busy;
+        applyBracesBtn.disabled = busy;
+        removeBracesBtn.disabled = busy;
     }
 
     function showFeedback(message, isError) {
@@ -431,32 +529,77 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function repaintTooth(num, status, treatmentId, notes) {
-        const wrapper = findWrapper(num);
-        if (!wrapper) return;
+    function statusLabel(status) {
+        const labels = {
+            healthy: '{{ __('messages.status_healthy') }}',
+            decayed: '{{ __('messages.status_decayed') }}',
+            filled: '{{ __('messages.status_filled') }}',
+            crown: '{{ __('messages.status_crown') }}',
+            root_canal: '{{ __('messages.status_root_canal') }}',
+            extracted: '{{ __('messages.status_extracted') }}',
+            missing: '{{ __('messages.status_missing') }}',
+            implant: '{{ __('messages.status_implant') }}',
+            fractured: '{{ __('messages.status_fractured') }}',
+            abscess: '{{ __('messages.status_abscess') }}',
+            braces: '{{ __('messages.status_braces') }}',
+            veneer: '{{ __('messages.status_veneer') }}'
+        };
 
-        wrapper.className = 'tooth-wrapper ' + status;
-        wrapper.dataset.status = status;
-        wrapper.dataset.treatment = treatmentId || '';
-        wrapper.dataset.notes = notes || '';
+        return labels[status] || status;
     }
 
-    async function applySelection() {
+    function replaceToothMarkup(toothNumber, html) {
+        const current = findWrapper(toothNumber);
+        if (!current) return;
+
+        const template = document.createElement('template');
+        template.innerHTML = html.trim();
+        const next = template.content.firstElementChild;
+        if (!next) return;
+
+        next.dataset.tooth = String(toothNumber);
+        const currentLabel = current.dataset.label;
+        if (currentLabel) {
+            next.dataset.label = currentLabel;
+            const labelEl = next.querySelector('.tooth-number');
+            if (labelEl) {
+                labelEl.textContent = currentLabel;
+            }
+        }
+
+        if (current.classList.contains('selected')) {
+            next.classList.add('selected');
+        }
+
+        current.replaceWith(next);
+    }
+
+    function applyRenderedTeeth(teeth) {
+        if (!Array.isArray(teeth)) return;
+        teeth.forEach(tooth => {
+            if (tooth?.tooth_number && tooth?.html) {
+                replaceToothMarkup(tooth.tooth_number, tooth.html);
+            }
+        });
+        syncToothVisuals();
+        refreshPanel();
+    }
+
+    function applyRenderedHistory(historyHtml) {
+        const container = document.getElementById('toothHistoryContainer');
+        if (!container) return;
+        container.innerHTML = historyHtml || '';
+    }
+
+    async function sendBulkAction(url, payload) {
         const nums = selectedNumbers();
         if (nums.length === 0) return;
 
         setBusy(true);
         showFeedback('{{ __('messages.working') }}', false);
 
-        const payload = {
-            tooth_numbers: nums,
-            status: statusSelect.value,
-            treatment_id: treatmentSelect.value || null,
-            notes: notesInput.value || null,
-        };
-
         try {
-            const response = await fetch("{{ route('patients.tooth-chart.bulk-apply', $patient) }}", {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -480,16 +623,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            nums.forEach(num => repaintTooth(num, payload.status, payload.treatment_id, payload.notes));
-
-            // Auto-deselect after a successful apply, as requested — the
-            // panel closes and the chart is ready for the next selection.
             clearSelection();
+            applyRenderedTeeth(data.teeth || []);
+            applyRenderedHistory(data.history_html || '');
+            showFeedback(data.message, false);
         } catch (err) {
             showFeedback('{{ __('messages.network_error') }}', true);
         } finally {
             setBusy(false);
         }
+    }
+
+    async function applySelection() {
+        const nums = selectedNumbers();
+        if (nums.length === 0) return;
+
+        await sendBulkAction("{{ route('patients.tooth-chart.bulk-apply', $patient) }}", {
+            tooth_numbers: nums,
+            status: statusSelect.value,
+            treatment_id: treatmentSelect.value || null,
+            notes: notesInput.value || null,
+        });
     }
 
     async function resetSelection() {
@@ -497,51 +651,43 @@ document.addEventListener('DOMContentLoaded', () => {
         if (nums.length === 0) return;
         if (!confirm('{{ __('messages.confirm_reset_tooth') }}')) return;
 
-        setBusy(true);
-        showFeedback('{{ __('messages.working') }}', false);
+        await sendBulkAction("{{ route('patients.tooth-chart.bulk-reset', $patient) }}", {
+            tooth_numbers: nums,
+        });
+    }
 
-        try {
-            const response = await fetch("{{ route('patients.tooth-chart.bulk-reset', $patient) }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify({ tooth_numbers: nums }),
-            });
+    async function applyBraces() {
+        const nums = selectedNumbers();
+        if (nums.length === 0) return;
 
-            let data;
-            try {
-                data = await response.json();
-            } catch {
-                showFeedback('{{ __('messages.unexpected_error') }}', true);
-                return;
-            }
+        await sendBulkAction("{{ route('patients.tooth-chart.bulk-apply', $patient) }}", {
+            tooth_numbers: nums,
+            status: 'braces',
+            treatment_id: treatmentSelect.value || null,
+            notes: notesInput.value || null,
+        });
+    }
 
-            if (!response.ok || !data.success) {
-                showFeedback(data.message || '{{ __('messages.error_occurred') }}', true);
-                return;
-            }
+    async function removeBraces() {
+        const nums = selectedNumbers();
+        if (nums.length === 0) return;
 
-            nums.forEach(num => repaintTooth(num, 'healthy', '', ''));
-            clearSelection();
-        } catch (err) {
-            showFeedback('{{ __('messages.network_error') }}', true);
-        } finally {
-            setBusy(false);
-        }
+        await sendBulkAction("{{ route('patients.tooth-chart.bulk-remove-braces', $patient) }}", {
+            tooth_numbers: nums,
+        });
     }
 
     applyBtn.addEventListener('click', applySelection);
     resetBtn.addEventListener('click', resetSelection);
+    applyBracesBtn.addEventListener('click', applyBraces);
+    removeBracesBtn.addEventListener('click', removeBraces);
 
     // Derive the toggle button's initial label from actual state rather
     // than relying on the server-rendered default happening to match —
     // harmless today (page always loads with an empty selection) but
     // keeps this correct even if that ever changes.
     syncToothVisuals();
+    updateBracesHint();
 });
 </script>
 @endpush

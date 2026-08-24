@@ -12,7 +12,15 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('username')->unique();
+            $table->string('avatar')->nullable();
+            // Persisted per-user (not localStorage) so it follows the
+            // user across devices, per the resolved theme assumption.
+            $table->string('theme')->default('light');
+            // Soft-disable for receptionist accounts; the primary Doctor
+            // account is protected from deletion/deactivation in code.
+            $table->boolean('is_active')->default(true);
             $table->string('password');
+            $table->json('working_hours')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

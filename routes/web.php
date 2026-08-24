@@ -24,7 +24,6 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\FinancialTransactionController;
-use App\Http\Controllers\ToothChartBulkController;
 use App\Http\Controllers\RoleController;
 
 use Illuminate\Support\Facades\Route;
@@ -154,10 +153,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/patients/{patient}/tooth-chart', [ToothChartController::class, 'show'])->name('patients.tooth-chart');
     Route::post('/patients/{patient}/tooth-chart', [ToothChartController::class, 'update'])->name('patients.tooth-chart.update');
     Route::delete('/patients/{patient}/tooth-chart/{tooth_number}', [ToothChartController::class, 'destroy'])->name('patients.tooth-chart.destroy');
-    Route::get('/patients/lookup', [PatientController::class, 'search'])
-    ->name('patients.lookup');
-    Route::get('/lab-cases/patient-lookup', [LabCaseController::class, 'patientLookup'])
-    ->name('lab-cases.patient-lookup');
+    Route::get('/patients/lookup', [PatientController::class, 'search'])->name('patients.lookup');
 
     // Procurement: Doctors and Receptionists can work with records; only Doctors delete.
     Route::middleware('role:Doctor|Admin Doctor|Receptionist')->group(function () {
@@ -204,6 +200,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('patients/{patient}/tooth-chart/bulk-reset', [\App\Http\Controllers\ToothChartController::class, 'bulkReset'])
         ->name('patients.tooth-chart.bulk-reset');
+
+    Route::post('patients/{patient}/tooth-chart/bulk-remove-braces', [\App\Http\Controllers\ToothChartController::class, 'bulkRemoveBraces'])
+        ->name('patients.tooth-chart.bulk-remove-braces');
 
     Route::post('/appointments/random-patient', [AppointmentController::class, 'randomPatient'])
             ->name('appointments.random-patient');  

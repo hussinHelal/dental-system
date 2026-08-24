@@ -11,10 +11,10 @@ return new class extends Migration
         Schema::create('patients', function (Blueprint $table) {
             $table->id();
             $table->string('full_name');
-            $table->string('phone')->index()->nullable();
+            $table->string('phone', 30)->nullable()->index();
             $table->date('date_of_birth')->nullable();
             $table->unsignedTinyInteger('age')->nullable();
-            $table->text('address')->nullable()->nullable();
+            $table->text('address')->nullable();
             $table->enum('gender', ['male', 'female'])->nullable();
             $table->text('notes')->nullable();
             $table->string('photo')->nullable();
@@ -30,8 +30,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('patients');
-        Schema::table('patients', function (Blueprint $table) {
-            $table->dropColumn(['xray_photo', 'tooth_chart', 'crown_color']);
-        });
     }
 };

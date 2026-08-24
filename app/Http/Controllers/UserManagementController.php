@@ -21,6 +21,7 @@ class UserManagementController extends Controller
         $staff = User::whereHas('roles', function ($query) {
                 $query->whereIn('name', [User::ROLE_RECEPTIONIST, User::ROLE_DOCTOR]);
             })
+            ->with('roles')
             ->when($request->query('q'), fn ($q, $term) => $q->where(function ($qq) use ($term) {
                 $qq->where('name', 'like', "%{$term}%")
                    ->orWhere('username', 'like', "%{$term}%");

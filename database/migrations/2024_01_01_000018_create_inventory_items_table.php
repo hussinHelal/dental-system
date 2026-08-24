@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('photo')->nullable();
             $table->unsignedInteger('low_stock_threshold')->default(0);
             $table->timestamps();
+
+            $table->index('name');
         });
     }
 

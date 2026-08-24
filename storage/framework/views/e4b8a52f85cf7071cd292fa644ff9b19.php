@@ -60,6 +60,7 @@
                                 <th><?php echo e(__('insurance.company_name')); ?></th>
                                 <th><?php echo e(__('insurance.contract_number')); ?></th>
                                 <th><?php echo e(__('insurance.patient_name')); ?></th>
+                                <th><?php echo e(__('insurance.patient_phone')); ?></th>
                                 <th><?php echo e(__('insurance.end_date')); ?></th>
                                 <th><?php echo e(__('insurance.discount')); ?></th>
                                 <th><?php echo e(__('insurance.status')); ?></th>
@@ -76,6 +77,9 @@
                                     <td data-label="<?php echo e(__('insurance.contract_number')); ?>"><?php echo e($contract->contract_number); ?></td>
                                     <td data-label="<?php echo e(__('insurance.patient_name')); ?>">
                                         <span class="fw-semibold"><?php echo e($contract->contact_person ?: '-'); ?></span>
+                                    </td> 
+                                    <td data-label="<?php echo e(__('insurance.patient_phone')); ?>">
+                                        <span class="fw-semibold"><?php echo e($contract->phone ?: '-'); ?></span>
                                     </td>
                                     <td data-label="<?php echo e(__('insurance.end_date')); ?>"><?php echo e($contract->end_date->format('Y-m-d')); ?></td>
                                     <td data-label="<?php echo e(__('insurance.discount')); ?>"><?php echo e($contract->discount_percentage); ?>%</td>

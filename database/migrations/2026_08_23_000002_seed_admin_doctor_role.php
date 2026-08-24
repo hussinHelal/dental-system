@@ -9,10 +9,9 @@ use Spatie\Permission\Models\Role;
  * access to Role Management. Existing Doctor / Receptionist rows are left
  * completely untouched — this is additive only.
  *
- * DEPENDS ON: 2026_08_23_000001_add_is_locked_to_roles_table.php running
- * first (this file writes to roles.is_locked). Filenames are timestamped
- * to enforce that order — do not rename either file in a way that changes
- * their alphabetical/timestamp order.
+ * DEPENDS ON: the `roles` table having an `is_locked` column (created in
+ * the base 2024_01_01_000000_create_permission_tables.php migration —
+ * this file writes to roles.is_locked).
  *
  * IMPORTANT: this migration does not assign Admin Doctor to any user. After
  * running it, promote your own account manually, e.g.:

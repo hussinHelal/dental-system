@@ -35,6 +35,10 @@ return new class extends Migration
             }
             $table->string('name');
             $table->string('guard_name');
+            // Not part of Spatie's stock schema: lets us mark a role (e.g. the
+            // seeded Admin Doctor) as protected from renaming/deletion/edits
+            // from the UI or API, enforced as a hard backend guard.
+            $table->boolean('is_locked')->default(false);
             $table->timestamps();
             if ($teams || config('permission.testing')) {
                 $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);

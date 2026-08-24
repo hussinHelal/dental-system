@@ -47,21 +47,25 @@
                     @endphp
                     <tr>
                         <td>{{ __('messages.page_'.$labelKey) }}</td>
-                        <td class="text-center">
+                        <td class="text-center" style="cursor: pointer;" onclick="document.getElementById('view_{{ $slug }}').click()">
                             <input type="checkbox"
+                                   id="view_{{ $slug }}"
                                    class="form-check-input page-view-checkbox"
                                    name="pages[{{ $slug }}][view]"
                                    value="1"
                                    data-slug="{{ $slug }}"
-                                   {{ $isViewChecked ? 'checked' : '' }}>
+                                   {{ $isViewChecked ? 'checked' : '' }}
+                                   onclick="event.stopPropagation()">
                         </td>
-                        <td class="text-center">
+                        <td class="text-center" style="cursor: pointer;" onclick="document.getElementById('manage_{{ $slug }}').click()">
                             <input type="checkbox"
+                                   id="manage_{{ $slug }}"
                                    class="form-check-input page-manage-checkbox"
                                    name="pages[{{ $slug }}][manage]"
                                    value="1"
                                    data-slug="{{ $slug }}"
-                                   {{ $isManageChecked ? 'checked' : '' }}>
+                                   {{ $isManageChecked ? 'checked' : '' }}
+                                   onclick="event.stopPropagation()">
                         </td>
                     </tr>
                 @endforeach
@@ -77,28 +81,29 @@
 <script>
 (function () {
     // "Manage implies View": checking Manage auto-checks View for the
-    // same page and disables that View box (so it can't be unchecked
-    // while Manage is still on) — visually enforces the rule the backend
-    // enforces authoritatively in StoreRoleRequest::toPermissionNames().
-    // Unchecking Manage re-enables View without touching its checked
-    // state either way — the user's last explicit View choice is
-    // preserved, not reset.
+    // same page. Unchecking View auto-unchecks Manage.
+    // The backend authoritatively enforces this in StoreRoleRequest::toPermissionNames().
     document.querySelectorAll('.page-manage-checkbox').forEach(function (manageBox) {
         var slug = manageBox.dataset.slug;
         var viewBox = document.querySelector('.page-view-checkbox[data-slug="' + slug + '"]');
         if (!viewBox) return;
 
-        function syncViewFromManage() {
+        manageBox.addEventListener('change', function () {
             if (manageBox.checked) {
                 viewBox.checked = true;
-                viewBox.disabled = true;
-            } else {
-                viewBox.disabled = false;
             }
-        }
+        });
 
-        manageBox.addEventListener('change', syncViewFromManage);
-        syncViewFromManage(); // apply on load too, in case Manage came back checked from old()/edit
+        viewBox.addEventListener('change', function () {
+            if (!viewBox.checked) {
+                manageBox.checked = false;
+            }
+        });
+
+        // Initialize state on load
+        if (manageBox.checked) {
+            viewBox.checked = true;
+        }
     });
 })();
 </script>

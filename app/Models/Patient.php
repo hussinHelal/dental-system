@@ -54,7 +54,12 @@ class Patient extends Model
 
     public function toothRecords(): HasMany
     {
-    return $this->hasMany(ToothRecord::class)->orderBy('tooth_number');
+        return $this->hasMany(ToothRecord::class)->orderBy('tooth_number');
+    }
+
+    public function toothTimelineEvents(): HasMany
+    {
+        return $this->hasMany(ToothTimelineEvent::class)->latest();
     }
     public function getDisplayAgeAttribute(): ?int
     {

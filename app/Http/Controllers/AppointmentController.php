@@ -46,34 +46,7 @@ class AppointmentController extends Controller
     ));
 }
 
-    // public function search(Request $request)
-    // {
-    //     $this->authorize('viewAny', Appointment::class);
 
-    //     $appointments = Appointment::query()
-    //         ->when($request->filled('q'), function ($q) use ($request) {
-    //             $term = trim($request->query('q'));
-    //             $q->whereHas('patient', fn ($p) => $p->where('full_name', 'like', "%{$term}%")
-    //                 ->orWhere('phone', 'like', "%{$term}%"));
-    //         })
-    //         ->when($request->filled('patient_id'), fn ($q, $v) => $q->where('patient_id', $v))
-    //         ->when($request->filled('doctor_id'), fn ($q, $v) => $q->where('doctor_id', $v))
-    //         ->when($request->filled('room_id'), fn ($q, $v) => $q->where('room_id', $v))
-    //         ->when($request->filled('visit_type'), fn ($q, $v) => $q->where('visit_type', $v))
-    //         ->when($request->filled('status'), fn ($q, $v) => $q->where('status', $v))
-    //         ->when($request->filled('date_from'), fn ($q, $v) => $q->whereDate('appointment_date', '>=', $v))
-    //         ->when($request->filled('date_to'), fn ($q, $v) => $q->whereDate('appointment_date', '<=', $v))
-    //         ->with(['patient', 'doctor', 'room'])
-    //         ->orderByDesc('appointment_date')
-    //         ->paginate(20)
-    //         ->withQueryString();
-
-    //     $doctors = Doctor::active()->orderBy('name')->get();
-    //     $rooms   = Room::active()->orderBy('name')->get();
-        
-
-    //     return view('appointments.search', compact('appointments', 'doctors', 'rooms'));
-    // }
    public function search(Request $request)
 {
     $this->authorize('viewAny', Appointment::class);

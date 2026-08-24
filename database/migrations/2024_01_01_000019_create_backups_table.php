@@ -12,7 +12,9 @@ return new class extends Migration
             $table->id();
             $table->string('filename');
             $table->string('path');
-            $table->enum('type', ['pdf', 'excel', 'both']);
+            $table->enum('type', ['pdf', 'excel', 'both', 'database']);
+            $table->enum('status', ['queued', 'completed', 'failed'])
+                ->default('completed');
             $table->unsignedBigInteger('size_bytes')->default(0);
             // Null generated_by means it was produced by the scheduled
             // monthly job rather than a manual "Backup Now" click.
