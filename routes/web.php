@@ -117,6 +117,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
     });
     Route::post('/payments/{payment}/installments', [PaymentController::class, 'addInstallment'])->name('payments.installments.store');
+    Route::post('/payments/{payment}/mark-paid', [PaymentController::class, 'markAsPaid'])->name('payments.mark-paid');
     
     // Patient Pictures - upload, view gallery, and delete
     Route::get('/patients/{patient}/pictures/{pictureType}/gallery', [PatientPictureController::class, 'gallery'])->name('patient-pictures.gallery');

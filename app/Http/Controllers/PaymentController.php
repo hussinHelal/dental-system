@@ -35,14 +35,23 @@ class PaymentController extends Controller
 
             $payment->amount_paid = match ($type) {
                 'paid_now' => $total,
-                default    => 0,
+                'installment', 'pay_later' => ! empty($data['first_installment_amount'])
+                    ? (float) $data['first_installment_amount']
+                    : 0,
+                default => 0,
             };
             $payment->payment_date = $type === 'paid_now' ? now()->toDateString() : null;
             $payment->remaining_balance = $total - $payment->amount_paid;
-            $payment->status = $type === 'paid_now' ? Payment::STATUS_PAID : Payment::STATUS_PENDING;
+            $payment->status = match ($type) {
+                'paid_now' => Payment::STATUS_PAID,
+                'installment', 'pay_later' => ! empty($data['first_installment_amount'])
+                    ? Payment::STATUS_INSTALLMENT
+                    : Payment::STATUS_PENDING,
+                default => Payment::STATUS_PENDING,
+            };
             $payment->save();
 
-            if ($type === 'installment' && ! empty($data['first_installment_amount'])) {
+            if (in_array($type, ['installment', 'pay_later'], true) && ! empty($data['first_installment_amount'])) {
                 $payment->installments()->create([
                     'amount'     => $data['first_installment_amount'],
                     'paid_date'  => now()->toDateString(),
@@ -84,11 +93,17 @@ class PaymentController extends Controller
             // Calculate amounts based on new payment type
             $payment->amount_paid = match ($type) {
                 'paid_now' => $total,
-                default    => (float) $payment->amount_paid,
+                'installment', 'pay_later' => (float) $payment->installments()->sum('amount'),
+                default => (float) $payment->amount_paid,
             };
             $payment->payment_date = $type === 'paid_now' ? now()->toDateString() : $payment->payment_date;
             $payment->remaining_balance = $total - $payment->amount_paid;
-            $payment->status = $type === 'paid_now' ? Payment::STATUS_PAID : Payment::STATUS_PENDING;
+            $payment->status = match ($type) {
+                'paid_now' => Payment::STATUS_PAID,
+                'installment' => Payment::STATUS_INSTALLMENT,
+                'pay_later' => $payment->installments()->exists() ? Payment::STATUS_INSTALLMENT : Payment::STATUS_PENDING,
+                default => Payment::STATUS_PENDING,
+            };
             $payment->save();
         });
 
@@ -119,6 +134,22 @@ class PaymentController extends Controller
         return $this->respondSuccess(
             $request,
             __('messages.installment_added'),
+            'patients.show',
+            ['patient' => $payment->patient_id]
+        );
+    }
+
+    public function markAsPaid(Request $request, Payment $payment)
+    {
+        $this->authorize('update', $payment);
+
+        if ($payment->remaining_balance > 0) {
+            $payment->markAsPaid();
+        }
+
+        return $this->respondSuccess(
+            $request,
+            __('messages.payment_paid'),
             'patients.show',
             ['patient' => $payment->patient_id]
         );

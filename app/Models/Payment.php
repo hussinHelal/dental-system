@@ -53,7 +53,7 @@ class Payment extends Model
 
     public function recalculate(): void
     {
-        $amountPaid = $this->payment_type === self::TYPE_INSTALLMENT
+        $amountPaid = in_array($this->payment_type, [self::TYPE_INSTALLMENT, self::TYPE_PAY_LATER], true)
             ? (float) $this->installments()->sum('amount')
             : (float) $this->amount_paid;
 
@@ -63,10 +63,31 @@ class Payment extends Model
         $this->status = match (true) {
             $this->remaining_balance <= 0 => self::STATUS_PAID,
             $this->payment_type === self::TYPE_INSTALLMENT => self::STATUS_INSTALLMENT,
+            $this->payment_type === self::TYPE_PAY_LATER && $this->installments()->exists() => self::STATUS_INSTALLMENT,
             $this->due_date && $this->due_date->isPast() => self::STATUS_OVERDUE,
             default => self::STATUS_PENDING,
         };
 
+        $this->save();
+    }
+
+    public function markAsPaid(): void
+    {
+        if ($this->remaining_balance <= 0) {
+            $this->status = self::STATUS_PAID;
+            $this->payment_date = $this->payment_date ?: now()->toDateString();
+            $this->save();
+            return;
+        }
+
+        $this->installments()->create([
+            'amount' => (float) $this->remaining_balance,
+            'paid_date' => now()->toDateString(),
+            'created_by' => auth()->id(),
+        ]);
+
+        $this->refresh();
+        $this->payment_date = $this->payment_date ?: now()->toDateString();
         $this->save();
     }
 

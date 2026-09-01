@@ -198,6 +198,8 @@ return [
     'payment_recorded' => 'تم تسجيل الدفعة بنجاح.',
     'payment_updated' => 'تم تحديث الدفعة بنجاح.',
     'payment_deleted' => 'تم حذف الدفعة.',
+    'payment_paid' => 'تم اعتبار الدفعة مدفوعة.',
+    'mark_as_paid' => 'تحديد كمدفوع',
     'installment_added' => 'تمت إضافة القسط بنجاح.',
     'installment_amount_required' => 'يرجى إدخال مبلغ القسط الأول.',
     'installment_amount_range' => 'يجب أن يكون مبلغ القسط أكبر من صفر وأقل من التكلفة الإجمالية.',

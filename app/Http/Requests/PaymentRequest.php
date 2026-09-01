@@ -32,7 +32,7 @@ class PaymentRequest extends FormRequest
             $total = (float) $this->input('total_amount', 0);
             $first = $this->input('first_installment_amount');
 
-            if ($type === 'installment') {
+            if (in_array($type, ['installment', 'pay_later'], true)) {
                 if ($first === null) {
                     $validator->errors()->add(
                         'first_installment_amount',

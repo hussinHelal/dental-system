@@ -201,6 +201,8 @@ return [
     'payment_recorded' => 'Payment recorded successfully.',
     'payment_updated' => 'Payment updated successfully.',
     'payment_deleted' => 'Payment deleted.',
+    'payment_paid' => 'Payment marked as paid.',
+    'mark_as_paid' => 'Mark as Paid',
     'installment_added' => 'Installment added successfully.',
     'installment_amount_required' => 'Please enter the first installment amount.',
     'installment_amount_range' => 'The installment amount must be greater than 0 and less than the total cost.',

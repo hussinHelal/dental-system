@@ -20,7 +20,7 @@ $toothStatusColors = [
     'wisdom' => 'secondary',
 ];
 @endphp
-    <a href="{{ route('patients.index') }}" class="btn btn-sm btn-primary mb-2 shadow-sm">
+    <a href="{{ route('patients.index') }}" class="btn btn-sm btn-primary mb-2 shadow-sm ">
         <i class="bi bi-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} me-1"></i>
         {{ __('messages.back') }}
     </a>
@@ -129,7 +129,7 @@ $toothStatusColors = [
                             </div>
                         </div>
 
-                        @if($payment->payment_type === 'installment')
+                        @if(in_array($payment->payment_type, [\App\Models\Payment::TYPE_INSTALLMENT, \App\Models\Payment::TYPE_PAY_LATER], true))
                             <div class="mt-2">
                                 @foreach($payment->installments as $installment)
                                     <div class="small text-secondary">
@@ -141,6 +141,12 @@ $toothStatusColors = [
                                         <button class="btn btn-sm btn-outline-primary mt-1" data-bs-toggle="modal" data-bs-target="#addInstallmentModal{{ $payment->id }}">
                                             {{ __('messages.add_installment') }}
                                         </button>
+                                        <form data-ajax-form method="POST" action="{{ route('payments.mark-paid', $payment) }}" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success mt-1">
+                                                {{ __('messages.mark_as_paid') }}
+                                            </button>
+                                        </form>
                                     @endif
                                 @endcan
                             </div>
@@ -170,7 +176,7 @@ $toothStatusColors = [
                         </x-modal>
                     @endcan
 
-                    @if($payment->payment_type === 'installment')
+                    @if(in_array($payment->payment_type, [\App\Models\Payment::TYPE_INSTALLMENT, \App\Models\Payment::TYPE_PAY_LATER], true))
                         <x-modal :id="'addInstallmentModal'.$payment->id" :title="__('messages.add_installment')">
                             <form data-ajax-form method="POST" action="{{ route('payments.installments.store', $payment) }}">
                                 @csrf
@@ -239,7 +245,7 @@ $toothStatusColors = [
                     <div class="position-relative">
                         <img src="{{ $picture->getPictureUrl() }}" class="img-fluid rounded shadow-sm" alt="X-Ray" style="cursor: pointer; max-height: 250px; object-fit: contain; width: 100%;" data-bs-toggle="modal" data-bs-target="#viewPictureModal{{ $picture->id }}">
                         <div class="position-absolute top-0 end-0 p-2 d-flex gap-2">
-                            <span class="badge bg-info">{{ $picture->created_at->format('M d, Y') }}</span>
+                            <span class="badge bg-info d-flex justify-content-center align-items-center">{{ $picture->created_at->format('M d, Y') }}</span>
                             @can('update', $patient)
                                 <button type="button" class="btn btn-sm btn-light p-1" data-bs-toggle="modal" data-bs-target="#editPictureModal{{ $picture->id }}" aria-label="{{ __('messages.edit_picture') }}">
                                     <i class="bi bi-pencil-square"></i>
@@ -312,7 +318,7 @@ $toothStatusColors = [
                     <div class="position-relative">
                         <img src="{{ $picture->getPictureUrl() }}" class="img-fluid rounded shadow-sm" alt="Patient Card" style="cursor: pointer; max-height: 250px; object-fit: contain; width: 100%;" data-bs-toggle="modal" data-bs-target="#viewPictureModal{{ $picture->id }}">
                         <div class="position-absolute top-0 end-0 p-2 d-flex gap-2">
-                            <span class="badge bg-info">{{ $picture->created_at->format('M d, Y') }}</span>
+                            <span class="badge bg-info d-flex justify-content-center align-items-center">{{ $picture->created_at->format('M d, Y') }}</span>
                             @can('update', $patient)
                                 <button type="button" class="btn btn-sm btn-light p-1" data-bs-toggle="modal" data-bs-target="#editPictureModal{{ $picture->id }}" aria-label="{{ __('messages.edit_picture') }}">
                                     <i class="bi bi-pencil-square"></i>
