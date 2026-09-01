@@ -533,8 +533,8 @@ $toothStatusColors = [
                 <input type="hidden" name="picture_type" value="xray">
                 <div class="mb-3">
                     <label class="form-label">{{ __('messages.xray_photo') }}</label>
-                    <input type="file" name="picture" class="form-control" accept="image/*" required>
-                    <small class="text-muted">{{ __('messages.max_size') }}: 5MB</small>
+                    <input type="file" name="picture[]" class="form-control" accept="image/*" multiple required>
+                    <small class="text-muted">{{ __('messages.max_size') }}: 5MB per image</small>
                 </div>
                 <x-form-textarea name="notes" :label="__('messages.picture_notes')" />
                 <button type="submit" class="btn btn-primary w-100">{{ __('messages.upload_picture') }}</button>
@@ -548,8 +548,8 @@ $toothStatusColors = [
                 <input type="hidden" name="picture_type" value="patient_card">
                 <div class="mb-3">
                     <label class="form-label">{{ __('messages.patient_card_picture') }}</label>
-                    <input type="file" name="picture" class="form-control" accept="image/*" required>
-                    <small class="text-muted">{{ __('messages.max_size') }}: 5MB</small>
+                    <input type="file" name="picture[]" class="form-control" accept="image/*" multiple required>
+                    <small class="text-muted">{{ __('messages.max_size') }}: 5MB per image</small>
                 </div>
                 <x-form-textarea name="notes" :label="__('messages.picture_notes')" />
                 <button type="submit" class="btn btn-primary w-100">{{ __('messages.upload_picture') }}</button>

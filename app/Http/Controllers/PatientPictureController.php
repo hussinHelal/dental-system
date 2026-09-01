@@ -22,25 +22,37 @@ class PatientPictureController extends Controller
     {
         $this->authorize('update', $patient);
 
+        $files = $request->file('picture');
+        if (!is_array($files)) {
+            $files = [$files];
+        }
+
         $validated = $request->validate([
             'picture_type' => 'required|in:xray,patient_card',
-            'picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'picture' => 'required|array|min:1',
+            'picture.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
             'notes' => 'nullable|string|max:500',
         ]);
 
-        try {
-            $path = $request->file('picture')->store(
-                "patients/{$patient->id}/pictures",
-                'public'
-            );
+        $createdPaths = [];
 
-            PatientPictureHistory::create([
-                'patient_id' => $patient->id,
-                'picture_type' => $validated['picture_type'],
-                'picture_path' => $path,
-                'notes' => $validated['notes'] ?? null,
-                'uploaded_by' => $request->user()->id,
-            ]);
+        try {
+            foreach ($files as $file) {
+                $path = $file->store(
+                    "patients/{$patient->id}/pictures",
+                    'public'
+                );
+
+                PatientPictureHistory::create([
+                    'patient_id' => $patient->id,
+                    'picture_type' => $validated['picture_type'],
+                    'picture_path' => $path,
+                    'notes' => $validated['notes'] ?? null,
+                    'uploaded_by' => $request->user()->id,
+                ]);
+
+                $createdPaths[] = $path;
+            }
 
             return $this->respondSuccess(
                 $request,
@@ -49,10 +61,12 @@ class PatientPictureController extends Controller
                 ['patient' => $patient]
             );
         } catch (\Exception $e) {
-            // Clean up uploaded file if database operation fails
-            if (isset($path) && Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
+            foreach ($createdPaths as $path) {
+                if (Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
             }
+
             throw $e;
         }
     }
