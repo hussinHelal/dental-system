@@ -117,9 +117,16 @@ $toothStatusColors = [
                                     &middot; {{ __('messages.remaining') }}: {{ number_format($payment->remaining_balance, 2) }}
                                 </div>
                             </div>
-                            <span class="badge text-bg-{{ $payment->statusBadgeClass() }}">
-                                {{ __('messages.payment_status_'.$payment->status) }}
-                            </span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge text-bg-{{ $payment->statusBadgeClass() }}">
+                                    {{ __('messages.payment_status_'.$payment->status) }}
+                                </span>
+                                @can('update', $payment)
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPaymentModal{{ $payment->id }}">
+                                        <i class="bi bi-pencil"></i> {{ __('messages.edit') }}
+                                    </button>
+                                @endcan
+                            </div>
                         </div>
 
                         @if($payment->payment_type === 'installment')
@@ -146,6 +153,22 @@ $toothStatusColors = [
                             </form>
                         @endcan
                     </div>
+
+                    {{-- Edit Payment Modal --}}
+                    @can('update', $payment)
+                        <x-modal :id="'editPaymentModal'.$payment->id" :title="__('messages.edit_payment')">
+                            <form data-ajax-form method="POST" action="{{ route('payments.update', $payment) }}">
+                                @csrf @method('PUT')
+                                <x-form-select name="treatment_id" :label="__('messages.treatment')" required :placeholder="__('messages.select_treatment')" :value="$payment->treatment_id"
+                                    :options="\App\Models\Treatment::active()->orderBy('name')->pluck('name', 'id')" />
+                                <x-form-select name="payment_type" :label="__('messages.payment_type')" required :value="$payment->payment_type"
+                                    :options="['paid_now' => __('messages.paid_now'), 'pay_later' => __('messages.pay_later'), 'installment' => __('messages.installment')]" />
+                                <x-form-input type="number" step="0.01" name="total_amount" :label="__('messages.total_amount')" required :value="$payment->total_amount" />
+                                <x-form-input type="date" name="due_date" :label="__('messages.due_date')" :value="optional($payment->due_date)->toDateString() ?: now()->toDateString()" />
+                                <button type="submit" class="btn btn-primary w-100">{{ __('messages.save') }}</button>
+                            </form>
+                        </x-modal>
+                    @endcan
 
                     @if($payment->payment_type === 'installment')
                         <x-modal :id="'addInstallmentModal'.$payment->id" :title="__('messages.add_installment')">
@@ -193,29 +216,62 @@ $toothStatusColors = [
 <div class="card zedan-card mb-4">
     <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
         <span><i class="bi bi-x-ray me-2"></i>{{ __('messages.xray_photo') }}</span>
-        @if($patient->xray_photo)
-            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#xrayViewModal">
-                <i class="bi bi-eye"></i> {{ __('messages.view') }}
-            </button>
-        @endif
+        <div class="d-flex gap-2">
+            @can('update', $patient)
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#uploadXrayModal">
+                    <i class="bi bi-cloud-arrow-up"></i> {{ __('messages.upload_picture') }}
+                </button>
+            @endcan
+            @if($patient->pictureHistory->where('picture_type', 'xray')->count() > 3)
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#xrayGalleryModal">
+                    <i class="bi bi-images"></i> {{ __('messages.view_all') }}
+                </button>
+            @endif
+        </div>
     </div>
-    <div class="card-body text-center">
-        @if($patient->xray_photo)
+    <div class="card-body">
+        @php
+            $xrayPictures = $patient->pictureHistory->where('picture_type', 'xray')->take(3);
+        @endphp
+        @if($xrayPictures->count() > 0)
+            <div class="d-flex flex-column gap-3">
+                @foreach($xrayPictures as $picture)
+                    <div class="position-relative">
+                        <img src="{{ $picture->getPictureUrl() }}" class="img-fluid rounded shadow-sm" alt="X-Ray" style="cursor: pointer; max-height: 250px; object-fit: contain; width: 100%;" data-bs-toggle="modal" data-bs-target="#viewPictureModal{{ $picture->id }}">
+                        <div class="position-absolute top-0 end-0 p-2 d-flex gap-2">
+                            <span class="badge bg-info">{{ $picture->created_at->format('M d, Y') }}</span>
+                            @can('update', $patient)
+                                <button type="button" class="btn btn-sm btn-light p-1" data-bs-toggle="modal" data-bs-target="#editPictureModal{{ $picture->id }}" aria-label="{{ __('messages.edit_picture') }}">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                            @endcan
+                        </div>
+                        @if($picture->notes)
+                            <small class="text-muted d-block mt-2">{{ $picture->notes }}</small>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @elseif($patient->xray_photo)
             <img src="{{ $patient->xrayPhotoUrl() }}" class="img-fluid rounded shadow-sm xray-image mb-2" alt="{{ __('messages.xray_photo') }}" style="max-height: 250px; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#xrayViewModal">
         @else
-            <p class="text-muted mb-0"><i class="bi bi-image fs-1"></i></p>
-            <p class="text-muted small mb-0">{{ __('messages.no_xray') ?? 'No X-ray uploaded.' }}</p>
+            <div class="text-center py-3">
+                <p class="text-muted mb-2"><i class="bi bi-image fs-1"></i></p>
+                <p class="text-muted small mb-0">{{ __('messages.no_xray') ?? 'No X-ray uploaded.' }}</p>
+            </div>
         @endif
     </div>
 </div>
 
-{{-- Crown Color Section --}}
+{{-- Crown Color Section (Text Only) --}}
 <div class="card zedan-card mb-4">
     <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
         <span><i class="bi bi-palette me-2"></i>{{ __('messages.crown_color') }}</span>
-        @if($patient->crown_color)
-            <span class="badge bg-primary fs-6">{{ $patient->crown_color }}</span>
-        @endif
+        @can('update', $patient)
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editCrownColorModal">
+                <i class="bi bi-pencil-square"></i> {{ $patient->crown_color ? __('messages.edit_crown_color') : __('messages.add_crown_color') }}
+            </button>
+        @endcan
     </div>
     <div class="card-body text-center">
         @if($patient->crown_color)
@@ -228,6 +284,56 @@ $toothStatusColors = [
         @endif
     </div>
 </div>
+
+{{-- Patient Card Picture Section --}}
+<div class="card zedan-card mb-4">
+    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-person-vcard me-2"></i>{{ __('messages.patient_card_picture') }}</span>
+        <div class="d-flex gap-2">
+            @can('update', $patient)
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#uploadPatientCardModal">
+                    <i class="bi bi-cloud-arrow-up"></i> {{ __('messages.upload_picture') }}
+                </button>
+            @endcan
+            @if($patient->pictureHistory->where('picture_type', 'patient_card')->count() > 3)
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#patientCardGalleryModal">
+                    <i class="bi bi-images"></i> {{ __('messages.view_all') }}
+                </button>
+            @endif
+        </div>
+    </div>
+    <div class="card-body">
+        @php
+            $patientCardPictures = $patient->pictureHistory->where('picture_type', 'patient_card')->take(3);
+        @endphp
+        @if($patientCardPictures->count() > 0)
+            <div class="d-flex flex-column gap-3">
+                @foreach($patientCardPictures as $picture)
+                    <div class="position-relative">
+                        <img src="{{ $picture->getPictureUrl() }}" class="img-fluid rounded shadow-sm" alt="Patient Card" style="cursor: pointer; max-height: 250px; object-fit: contain; width: 100%;" data-bs-toggle="modal" data-bs-target="#viewPictureModal{{ $picture->id }}">
+                        <div class="position-absolute top-0 end-0 p-2 d-flex gap-2">
+                            <span class="badge bg-info">{{ $picture->created_at->format('M d, Y') }}</span>
+                            @can('update', $patient)
+                                <button type="button" class="btn btn-sm btn-light p-1" data-bs-toggle="modal" data-bs-target="#editPictureModal{{ $picture->id }}" aria-label="{{ __('messages.edit_picture') }}">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                            @endcan
+                        </div>
+                        @if($picture->notes)
+                            <small class="text-muted d-block mt-2">{{ $picture->notes }}</small>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <div class="text-center py-3">
+                <p class="text-muted mb-2"><i class="bi bi-card-image fs-1"></i></p>
+                <p class="text-muted small mb-0">{{ __('messages.no_pictures') }}</p>
+            </div>
+        @endif
+    </div>
+</div>
+
             {{-- Appointments (PAGINATED) --}}
             <div class="card zedan-card mb-4">
                 <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
@@ -287,11 +393,11 @@ $toothStatusColors = [
                 <x-form-textarea name="address" :label="__('messages.address')" :value="$patient->address" />
                 <x-form-textarea name="notes" :label="__('messages.notes')" :value="$patient->notes" />
 
-                {{-- Photo --}}
+                {{-- Patient Card Picture --}}
                 <div class="mb-3">
-                    <label class="form-label">{{ __('messages.photo') }}</label>
-                    <input type="file" name="photo" class="form-control" accept="image/*">
-                   
+                    <label class="form-label">{{ __('messages.patient_card_picture') }}</label>
+                    <input type="file" name="patient_card_picture" class="form-control" accept="image/*">
+                    <small class="text-muted">{{ __('messages.max_size') }}: 5MB</small>
                 </div>
 
                 {{-- X-Ray --}}
@@ -370,7 +476,7 @@ $toothStatusColors = [
                     :options="['paid_now' => __('messages.paid_now'), 'pay_later' => __('messages.pay_later'), 'installment' => __('messages.installment')]" />
                 <x-form-input type="number" step="0.01" name="total_amount" :label="__('messages.total_amount')" required />
                 <x-form-input type="number" step="0.01" name="first_installment_amount" :label="__('messages.first_installment_amount')" />
-                <x-form-input type="date" name="due_date" :label="__('messages.due_date')" />
+                <x-form-input type="date" name="due_date" :label="__('messages.due_date')" :value="now()->toDateString()" />
                 <button type="submit" class="btn btn-primary w-100">{{ __('messages.save') }}</button>
             </form>
         </x-modal>
@@ -396,13 +502,163 @@ $toothStatusColors = [
         </x-modal>
     @endif
     
-   
+    {{-- Upload Picture Modals --}}
+    @can('update', $patient)
+        <x-modal id="editCrownColorModal" :title="__('messages.crown_color')" :centered="true">
+            <form data-ajax-form method="POST" action="{{ route('patients.update', $patient) }}">
+                @csrf @method('PUT')
+                <input type="hidden" name="full_name" value="{{ $patient->full_name }}">
+                <div class="mb-3">
+                    <label class="form-label">{{ __('messages.full_name') }}</label>
+                    <input type="text" class="form-control" value="{{ $patient->full_name }}" disabled readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ __('messages.crown_color') }}</label>
+                    <input type="text" name="crown_color" class="form-control" value="{{ $patient->crown_color }}" placeholder="A2, B1, C3 ...">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">{{ __('messages.save') }}</button>
+            </form>
+        </x-modal>
+
+        {{-- Upload X-Ray Modal --}}
+        <x-modal id="uploadXrayModal" :title="__('messages.upload_picture')" :centered="true">
+            <form data-ajax-form method="POST" action="{{ route('patient-pictures.store', $patient) }}" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="picture_type" value="xray">
+                <div class="mb-3">
+                    <label class="form-label">{{ __('messages.xray_photo') }}</label>
+                    <input type="file" name="picture" class="form-control" accept="image/*" required>
+                    <small class="text-muted">{{ __('messages.max_size') }}: 5MB</small>
+                </div>
+                <x-form-textarea name="notes" :label="__('messages.picture_notes')" />
+                <button type="submit" class="btn btn-primary w-100">{{ __('messages.upload_picture') }}</button>
+            </form>
+        </x-modal>
+
+        {{-- Upload Patient Card Modal --}}
+        <x-modal id="uploadPatientCardModal" :title="__('messages.upload_picture')" :centered="true">
+            <form data-ajax-form method="POST" action="{{ route('patient-pictures.store', $patient) }}" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="picture_type" value="patient_card">
+                <div class="mb-3">
+                    <label class="form-label">{{ __('messages.patient_card_picture') }}</label>
+                    <input type="file" name="picture" class="form-control" accept="image/*" required>
+                    <small class="text-muted">{{ __('messages.max_size') }}: 5MB</small>
+                </div>
+                <x-form-textarea name="notes" :label="__('messages.picture_notes')" />
+                <button type="submit" class="btn btn-primary w-100">{{ __('messages.upload_picture') }}</button>
+            </form>
+        </x-modal>
+    @endcan
+
+    {{-- Picture Gallery Modals (Vertical Layout) --}}
+    {{-- X-Ray Gallery Modal --}}
+    @if($patient->pictureHistory->where('picture_type', 'xray')->count() > 0)
+        @php $xrayGalleryPictures = $patient->pictureHistory->where('picture_type', 'xray')->take(30); @endphp
+        <x-modal id="xrayGalleryModal" :title="__('messages.picture_gallery')" size="xl" :centered="true">
+            <div class="gallery-container" style="max-height: 75vh; overflow-y: auto;">
+                @foreach($xrayGalleryPictures as $picture)
+                    <div class="position-relative mb-3">
+                        <img src="{{ $picture->getPictureUrl() }}" class="img-fluid rounded shadow-sm w-100" alt="X-Ray" loading="lazy" data-gallery-image data-gallery-title="X-Ray" style="cursor: pointer; max-height: 300px; object-fit: contain;" data-bs-toggle="modal" data-bs-target="#viewPictureModal{{ $picture->id }}">
+                        <div class="position-absolute top-0 end-0 p-2">
+                            <span class="badge bg-info">{{ $picture->created_at->format('M d, Y') }}</span>
+                        </div>
+                        @if($picture->notes)
+                            <div class="mt-2 small text-muted text-center">{{ $picture->notes }}</div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </x-modal>
+    @endif
+
+    {{-- Patient Card Gallery Modal --}}
+    @if($patient->pictureHistory->where('picture_type', 'patient_card')->count() > 0)
+        @php $patientCardGalleryPictures = $patient->pictureHistory->where('picture_type', 'patient_card')->take(30); @endphp
+        <x-modal id="patientCardGalleryModal" :title="__('messages.picture_gallery')" size="xl" :centered="true">
+            <div class="gallery-container" style="max-height: 75vh; overflow-y: auto;">
+                @foreach($patientCardGalleryPictures as $picture)
+                    <div class="position-relative mb-3">
+                        <img src="{{ $picture->getPictureUrl() }}" class="img-fluid rounded shadow-sm w-100" alt="Patient Card" loading="lazy" data-gallery-image data-gallery-title="Patient Card" style="cursor: pointer; max-height: 300px; object-fit: contain;" data-bs-toggle="modal" data-bs-target="#viewPictureModal{{ $picture->id }}">
+                        <div class="position-absolute top-0 end-0 p-2">
+                            <span class="badge bg-info">{{ $picture->created_at->format('M d, Y') }}</span>
+                        </div>
+                        @if($picture->notes)
+                            <div class="mt-2 small text-muted text-center">{{ $picture->notes }}</div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </x-modal>
+
+    @endif
+
+    {{-- Individual Picture View Modals --}}
+    @foreach($patient->pictureHistory as $picture)
+        <x-modal :id="'viewPictureModal'.$picture->id" :title="__('messages.picture_gallery')" size="xl" :centered="true">
+            <div class="text-center bg-light p-0" style="margin: -1rem; margin-bottom: 1rem;">
+                <img src="{{ $picture->getPictureUrl() }}" class="img-fluid" style="max-height: 65vh;" alt="Picture">
+            </div>
+            <div class="d-flex flex-column flex-md-row justify-content-center align-items-center text-center gap-2">
+                <div>
+                    <p class="text-muted small mb-1">{{ $picture->created_at->format('M d, Y H:i') }}</p>
+                    @if($picture->notes)
+                        <p class="text-muted small mb-0">{{ $picture->notes }}</p>
+                    @endif
+                </div>
+                <div class="d-flex gap-2 justify-content-center">
+                    @can('update', $patient)
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPictureModal{{ $picture->id }}">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <form data-ajax-form method="POST" action="{{ route('patient-pictures.destroy', $picture) }}" data-confirm="{{ __('messages.confirm_delete') }}" class="d-inline">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    @endcan
+                    <a href="{{ $picture->getPictureUrl() }}" download class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-download"></i>
+                    </a>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
+                        {{ __('messages.close') }}
+                    </button>
+                </div>
+            </div>
+        </x-modal>
+
+        @can('update', $patient)
+            <x-modal :id="'editPictureModal'.$picture->id" :title="__('messages.edit_picture')" :centered="true">
+                <form data-ajax-form method="POST" action="{{ route('patient-pictures.update', $picture) }}" enctype="multipart/form-data">
+                    @csrf @method('PUT')
+                    <div class="mb-3">
+                        <label class="form-label">{{ __('messages.picture') }}</label>
+                        <input type="file" name="picture" class="form-control" accept="image/*">
+                        <small class="text-muted">{{ __('messages.max_size') }}: 5MB</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ __('messages.picture_notes') }}</label>
+                        <textarea name="notes" class="form-control" rows="4" placeholder="{{ __('messages.picture_notes') }}">{{ old('notes', $picture->notes) }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">{{ __('messages.save') }}</button>
+                </form>
+
+                <form data-ajax-form method="POST" action="{{ route('patient-pictures.destroy', $picture) }}" data-confirm="{{ __('messages.confirm_delete') }}" class="mt-2">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn btn-outline-danger w-100">
+                        {{ __('messages.remove_picture') }}
+                    </button>
+                </form>
+            </x-modal>
+        @endcan
+    @endforeach
     
 @endsection
 
 @push('styles')
 <style>
-.tooth-chart-wrapper, .tooth-chart-editor {
+.gallery-container {
     display: flex;
     flex-direction: column;
     gap: 10px;

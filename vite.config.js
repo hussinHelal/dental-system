@@ -8,6 +8,8 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/css/app-rtl.css',
                 'resources/js/app.js',
+                'resources/js/ajax-form.js',
+                'resources/js/patient-gallery.js',
             ],
             refresh: true,
         }),

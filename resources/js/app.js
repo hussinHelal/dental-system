@@ -1,5 +1,7 @@
 import * as bootstrap from 'bootstrap';
 import Chart from 'chart.js/auto';
+import './ajax-form.js';
+import './patient-gallery.js';
 window.bootstrap = bootstrap;
 
 /**
@@ -306,106 +308,6 @@ async function autoFillAppointmentStartTime(modal) {
         console.error('Failed to load appointment availability', err);
     }
 }
-
-/**
- * Generic AJAX submit handler for every create/edit modal form. Forms
- * opt in with data-ajax-form. On 422 it renders errors inline next to
- * each field; on success it either follows a redirect URL or reloads
- * the current page so the underlying table refreshes.
- */
-function clearFormErrors(form) {
-    form.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
-    form.querySelectorAll('.invalid-feedback[data-server-error]').forEach((el) => el.remove());
-}
-
-function showFormErrors(form, errors) {
-    let matchedAny = false;
-
-    Object.entries(errors).forEach(([field, messages]) => {
-        const input = form.querySelector(`[name="${field}"]`);
-        if (!input) return;
-
-        matchedAny = true;
-        input.classList.add('is-invalid');
-        const feedback = document.createElement('div');
-        feedback.className = 'invalid-feedback d-block';
-        feedback.setAttribute('data-server-error', 'true');
-        feedback.textContent = Array.isArray(messages) ? messages[0] : messages;
-        input.closest('.mb-3, .form-group, .col')?.appendChild(feedback);
-    });
-
-    return matchedAny;
-}
-
-document.addEventListener('submit', async (e) => {
-    const form = e.target;
-    if (!form.matches('[data-ajax-form]')) return;
-
-    e.preventDefault();
-    if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) {
-        return;
-    }
-
-    clearFormErrors(form);
-
-    const submitBtn = form.querySelector('[type="submit"]');
-    submitBtn?.setAttribute('disabled', 'disabled');
-
-    try {
-        const formData = new FormData(form);
-        const method = (formData.get('_method') || form.method || 'POST').toString().toUpperCase();
-        // Debug info: log the target action and form keys
-        console.log('AJAX submit:', form.action, method);
-        for (const pair of formData.entries()) {
-            console.log('  field:', pair[0], pair[1]);
-        }
-
-        const fetchOptions = {
-            method,
-            credentials: 'same-origin',
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
-            },
-        };
-
-        // Do not attach a request body to GET/HEAD requests (fetch throws)
-        if (method !== 'GET' && method !== 'HEAD') {
-            fetchOptions.body = formData;
-        }
-
-        const response = await fetch(form.action, fetchOptions);
-
-        const data = await response.json().catch(() => ({}));
-
-        if (response.status === 422 && data.errors) {
-            const matched = showFormErrors(form, data.errors);
-            if (!matched) {
-                const firstError = Object.values(data.errors)[0];
-                alert(Array.isArray(firstError) ? firstError[0] : firstError);
-            }
-            return;
-        }
-
-        if (!response.ok) {
-            alert(data.message || window.i18n?.somethingWentWrong || 'Something went wrong. Please try again.');
-            return;
-        }
-
-        if (data.redirect) {
-            window.location.href = data.redirect;
-        } else {
-            window.location.reload();
-        }
-    } catch (err) {
-            console.error('AJAX form submit failed', err);
-            const message = err?.message || window.i18n?.networkError || 'Network error. Please try again.';
-            alert(`Network error: ${message}`);
-    } finally {
-        submitBtn?.removeAttribute('disabled');
-    }
-});
 
 /**
  * Weekly revenue sparkline on the Doctor dashboard.

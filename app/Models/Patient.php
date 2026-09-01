@@ -61,6 +61,12 @@ class Patient extends Model
     {
         return $this->hasMany(ToothTimelineEvent::class)->latest();
     }
+
+    public function pictureHistory(): HasMany
+    {
+        return $this->hasMany(PatientPictureHistory::class)->orderByDesc('created_at');
+    }
+
     public function getDisplayAgeAttribute(): ?int
     {
         return $this->date_of_birth?->age ?? $this->age;

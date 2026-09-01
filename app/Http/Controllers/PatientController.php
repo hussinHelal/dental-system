@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\HandlesImageUploads;
 use App\Http\Controllers\Concerns\RespondsToModals;
 use App\Http\Requests\PatientRequest;
 use App\Models\Patient;
+use App\Models\PatientPictureHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -122,6 +123,19 @@ class PatientController extends Controller
             $data['xray_photo'] = $this->storeResizedImage(
                 $request->file('xray_photo'), 'patients/xrays', 1600
             );
+        }
+
+        if ($request->hasFile('patient_card_picture')) {
+            $cardFile = $request->file('patient_card_picture');
+            $cardPath = $cardFile->store("patients/{$patient->id}/pictures", 'public');
+
+            PatientPictureHistory::create([
+                'patient_id' => $patient->id,
+                'picture_type' => 'patient_card',
+                'picture_path' => $cardPath,
+                'notes' => null,
+                'uploaded_by' => $request->user()?->id,
+            ]);
         }
 
         if ($request->has('tooth_chart')) {

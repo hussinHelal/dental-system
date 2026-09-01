@@ -4,8 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Doctor;
 use App\Models\Patient;
+use App\Models\PatientPictureHistory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -92,6 +95,37 @@ class RoleAccessTest extends TestCase
         $response = $this->actingAs($this->receptionist)->get('/backups');
 
         $response->assertOk();
+    }
+
+    public function test_doctor_can_replace_a_patient_picture_with_a_new_upload(): void
+    {
+        Storage::fake('public');
+
+        $patient = Patient::factory()->create();
+        $oldFile = UploadedFile::fake()->image('old-card.jpg', 200, 200);
+        $oldPath = $oldFile->storeAs("patients/{$patient->id}/pictures", 'old-card.jpg', 'public');
+
+        $picture = PatientPictureHistory::create([
+            'patient_id' => $patient->id,
+            'picture_type' => 'patient_card',
+            'picture_path' => $oldPath,
+            'notes' => 'Old note',
+            'uploaded_by' => $this->doctor->id,
+        ]);
+
+        $newFile = UploadedFile::fake()->image('new-card.jpg', 400, 300);
+
+        $response = $this->actingAs($this->doctor)->put("/patient-pictures/{$picture->id}", [
+            'notes' => 'Updated note',
+            'picture' => $newFile,
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $picture->refresh();
+        $this->assertNotSame($oldPath, $picture->picture_path);
+        $this->assertSame('Updated note', $picture->notes);
+        $this->assertTrue(Storage::disk('public')->exists($picture->picture_path));
+        $this->assertFalse(Storage::disk('public')->exists($oldPath));
     }
 
     public function test_receptionist_cannot_edit_inventory_thresholds_via_full_update_route(): void

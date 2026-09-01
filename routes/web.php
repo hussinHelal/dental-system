@@ -25,6 +25,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\FinancialTransactionController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PatientPictureController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -111,9 +112,18 @@ Route::middleware('auth')->group(function () {
     // Payments - nested under a patient; Receptionist records
     // payments/installments but never deletes history.
     Route::post('/patients/{patient}/payments', [PaymentController::class, 'store'])->name('payments.store');
-    Route::post('/payments/{payment}/installments', [PaymentController::class, 'addInstallment'])->name('payments.installments.store');
     Route::middleware('role:Doctor|Admin Doctor')->group(function () {
+        Route::put('/payments/{payment}', [PaymentController::class, 'update'])->name('payments.update');
         Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
+    });
+    Route::post('/payments/{payment}/installments', [PaymentController::class, 'addInstallment'])->name('payments.installments.store');
+    
+    // Patient Pictures - upload, view gallery, and delete
+    Route::get('/patients/{patient}/pictures/{pictureType}/gallery', [PatientPictureController::class, 'gallery'])->name('patient-pictures.gallery');
+    Route::middleware('role:Doctor|Admin Doctor')->group(function () {
+        Route::post('/patients/{patient}/pictures', [PatientPictureController::class, 'uploadPicture'])->name('patient-pictures.store');
+        Route::put('/patient-pictures/{picture}', [PatientPictureController::class, 'updatePicture'])->name('patient-pictures.update');
+        Route::delete('/patient-pictures/{picture}', [PatientPictureController::class, 'deletePicture'])->name('patient-pictures.destroy');
     });
     
     // Inventory - Receptionist may only adjust quantity.

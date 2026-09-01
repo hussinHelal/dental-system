@@ -29,7 +29,7 @@ class PaymentController extends Controller
                 'appointment_id' => $data['appointment_id'] ?? null,
                 'payment_type'   => $type,
                 'total_amount'   => $total,
-                'due_date'       => $data['due_date'] ?? null,
+                'due_date'       => $data['due_date'] ?? now()->toDateString(),
                 'created_by'     => $request->user()->id,
             ]);
 
@@ -56,6 +56,47 @@ class PaymentController extends Controller
             __('messages.payment_recorded'),
             'patients.show',
             ['patient' => $patient]
+        );
+    }
+
+    /**
+     * Update an existing payment
+     * Note: Changing payment type from/to installment requires careful handling
+     */
+    public function update(PaymentRequest $request, Payment $payment)
+    {
+        $this->authorize('update', $payment);
+
+        $data  = $request->validated();
+        $type  = $data['payment_type'];
+        $total = (float) $data['total_amount'];
+
+        DB::transaction(function () use ($data, $type, $total, $payment, $request) {
+            // Store old payment type for reference
+            $oldType = $payment->payment_type;
+            
+            $payment->treatment_id   = $data['treatment_id'];
+            $payment->appointment_id = $data['appointment_id'] ?? null;
+            $payment->payment_type   = $type;
+            $payment->total_amount   = $total;
+            $payment->due_date       = $data['due_date'] ?? now()->toDateString();
+
+            // Calculate amounts based on new payment type
+            $payment->amount_paid = match ($type) {
+                'paid_now' => $total,
+                default    => (float) $payment->amount_paid,
+            };
+            $payment->payment_date = $type === 'paid_now' ? now()->toDateString() : $payment->payment_date;
+            $payment->remaining_balance = $total - $payment->amount_paid;
+            $payment->status = $type === 'paid_now' ? Payment::STATUS_PAID : Payment::STATUS_PENDING;
+            $payment->save();
+        });
+
+        return $this->respondSuccess(
+            $request,
+            __('messages.payment_updated'),
+            'patients.show',
+            ['patient' => $payment->patient_id]
         );
     }
 

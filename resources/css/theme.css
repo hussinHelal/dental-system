@@ -214,13 +214,80 @@ body {
   --bs-table-bg: transparent;
 }
 
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.card-header > * {
+  min-width: 0;
+}
+
+.btn,
+.form-control,
+.form-select,
+.form-check-input,
+.input-group-text,
+.modal-content,
+.table,
+.card {
+  border-radius: var(--zedan-radius);
+}
+
 /* Low stock / status accents */
 .badge-low-stock {
   background-color: #dc3545;
 }
 
+@media (max-width: 991.98px) {
+  .container,
+  .container-fluid {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .card-header {
+    align-items: flex-start;
+  }
+
+  .modal-dialog {
+    max-width: calc(100vw - 1rem);
+    margin: 0.5rem auto;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .btn {
+    white-space: normal;
+  }
+}
+
 /* Mobile: turn wide tables into stacked cards */
 @media (max-width: 767.98px) {
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .card-header .btn,
+  .card-header .d-flex,
+  .card-header > div {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .row.g-2 > [class*="col-"] {
+    width: 100%;
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
   table.zedan-responsive-table thead {
     display: none;
   }
