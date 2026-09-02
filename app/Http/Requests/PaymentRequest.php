@@ -25,6 +25,29 @@ class PaymentRequest extends FormRequest
         ];
     }
 
+    // public function withValidator(ValidatorContract $validator): void
+    // {
+    //     $validator->after(function (ValidatorContract $validator) {
+    //         $type  = $this->input('payment_type');
+    //         $total = (float) $this->input('total_amount', 0);
+    //         $first = $this->input('first_installment_amount');
+
+    //         if (in_array($type, ['installment', 'pay_later'], true)) {
+    //             if ($first === null) {
+    //                 $validator->errors()->add(
+    //                     'first_installment_amount',
+    //                     __('messages.installment_amount_required')
+    //                 );
+    //             /* BUG FIX: allow first installment to equal total (full payment via installment) */
+    //             } elseif ((float) $first <= 0 || (float) $first > $total) {
+    //                 $validator->errors()->add(
+    //                     'first_installment_amount',
+    //                     __('messages.installment_amount_range')
+    //                 );
+    //             }
+    //         }
+    //     });
+    // }
     public function withValidator(ValidatorContract $validator): void
     {
         $validator->after(function (ValidatorContract $validator) {
@@ -32,13 +55,20 @@ class PaymentRequest extends FormRequest
             $total = (float) $this->input('total_amount', 0);
             $first = $this->input('first_installment_amount');
 
+            // Only enforced on create. The edit form doesn't collect
+            // first_installment_amount — installments on an existing payment
+            // are managed separately via addInstallment(), and update()
+            // recalculates amount_paid from the existing installments sum.
+            if (! $this->isMethod('POST')) {
+                return;
+            }
+
             if (in_array($type, ['installment', 'pay_later'], true)) {
                 if ($first === null) {
                     $validator->errors()->add(
                         'first_installment_amount',
                         __('messages.installment_amount_required')
                     );
-                /* BUG FIX: allow first installment to equal total (full payment via installment) */
                 } elseif ((float) $first <= 0 || (float) $first > $total) {
                     $validator->errors()->add(
                         'first_installment_amount',
